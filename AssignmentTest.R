@@ -29,11 +29,11 @@ $ git commit -m "data added"   # committed files
 
 ## b)
 
-$ git log  ## search for commit reference
+$ git add -p HelloGit.txt ## break down file into hunks, Git will prompt you 
+                          ## with a choice which hunks to stage for next commit
+$ git commit -m "Part 1"
 
-$ git checkout main  # make sure you are in wanted branch
+$ git add HelloGit.txt  ## stage rest of commitment
 
-$ git cherry-pick >ref< # ref stands for placeholder of commit reference
-  # commit for HelloGit-txt will be applied to 
-  #different branch
+$ git commit -m "Part2" ## commit rest of commitment
   
