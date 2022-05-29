@@ -21,6 +21,10 @@ library(tidyverse)
 load(here("rent_advertisements.RData"))
 immowelt
 
+### heating_cost_excluded Spalte rausschmeißen, dort sind nur NAs
+immowelt%<>%
+  select(-heating_cost_excluded)
+
 head(immowelt)
 names(immowelt)
 
@@ -34,11 +38,14 @@ immowelt %>%
   kableExtra::row_spec(0, bold = TRUE)
 
 # Stellen Sie anschließend sicher, dass alle Variablen in einer geeigneten Klasse gespeichert werden
-char_v<-c("title","building_year")
+char_v<-c("title")
 
 immowelt%<>%
   mutate(across(where(is.character) &! any_of(char_v),
                 as.factor))
+
+immowelt%<>%
+  mutate(building_year=as.numeric(building_year))
 
 #b) Kalkulieren cold_rent und warm_rent per square meter
 immowelt%<>%
@@ -65,9 +72,11 @@ immowelt%>%
 immowelt %>%
   mutate(zipcode=factor(zipcode, c("45141","45147","45279","45326","45355",
                                    "44793","44795","44866","44809","44801"))) %>%
+  drop_na() %>%
   ggplot(aes(x=zipcode, y=warm_rent, color=city))+
   geom_boxplot()+
-  labs(title = 'Boxplot for the ten district with the most ads for essen and bochum')+
+  labs(title = 'Boxplot for the ten district with the most ads for essen and bochum',
+       x="\n Zipcode", y="\n warm rent")+
   theme_minimal()+
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -76,12 +85,16 @@ immowelt %>%
 immowelt%>%
   ggplot(aes(x=square_meter, y=cold_rent_qm, color=city))+
   geom_point()+
-  geom_smooth(se=FALSE)
+  geom_smooth(se=FALSE)+
+  labs(title = "Relatonship between square meter and warm rent per square meter",
+       x="square meter", y="cold rent per qm")
 
 immowelt%>%
   ggplot(aes(x=square_meter, y=warm_rent_qm, color=city))+
   geom_point()+
-  geom_smooth(se=FALSE)
+  geom_smooth(se=FALSE)+
+  labs(title = "Relatonship between square meter and cold rent per square meter",
+       x="square meter", y="warm rent per qm")
 
 #f)
 immowelt%>%
@@ -95,7 +108,7 @@ immowelt%>%
   ggplot(aes(x=cold_rent_qm, y=warm_rent_qm, color=city))+
   geom_boxplot()+
   labs(title = "Comparing Warm Rent vs. Cold Rent per square meter for Bochum and Essen",
-       x="Cold rent", y="Warm rent")
+       x="Cold rent per qm", y="Warm rent per qm")
 
 #g)
 # da war ein Außreiser, warmmiete bei 75 was kein sinn ergeben hat. Wusste nicht wie
@@ -108,7 +121,7 @@ immowelt%>%
   ggplot(aes(x=square_meter, y=ship_nebenkosten))+
   geom_point()+
   labs(title = " Share of Nebenkosten of the warm rent",
-       x="Apprtment Size", y="Shape in %")
+       x="Apprtment Size in square meter", y="Shape in %")
 
 #h)
 #(i)
@@ -120,7 +133,6 @@ immowelt%>%
   drop_na()%>%
   ggplot(aes(efficiency_class, energy_demand, color=city))+
   geom_boxplot()
-
 
 ##efficiency classes differ in terms of their energy demand  
 
@@ -150,9 +162,11 @@ cor%>%
   ggplot(aes(var1, var2, fill=value))+
   geom_tile()
 
+
 #there is no correlation between effiency_calss and building_year 
 # and beetween efficiency_class and cold_rent
-# but normaly there schould be. This depends here because of type of data and Lots of NA
+# but normaly there schould be. This depends here because of type of data and Lots of NA and i
+# dont know how to remove here the NAs, drop_na() doesnt work
 
 
 # i)
@@ -172,6 +186,42 @@ summary(reg3)
 
 #because maybe both cities can have the same zipcode. If we use both in one regression, we 
 # maybe calculate it as double?^^ 
+
+#oder mithilfe cross-validierung
+set.seed(123)
+train<-immowelt%>%
+  slice_sample(prop = 0.8)
+
+test<-immowelt%>%
+  anti_join(train)
+
+mod_city<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
+             data = train)
+summary(mod_city) 
+
+mod_zipcode<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode,
+                data = train)
+
+summary(mod_zipcode)
+
+#For both models, compute the RMSE on the ‘test‘ dataset.
+test%>%
+  rmse(mod_city,.)
+
+test%>%
+  rmse(mod_zipcode,.)
+
+# The prediciton with using city is better.
+
+mod_full<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+
+               zipcode+city, data = train)
+
+summary(mod_full)
+summary(mod_city)
+summary(mod_zipcode)
+# bei mod_full haben wir möglicherweise zu großen effekt,
+# weil wir schon einzeln städte angucken und die Postleizahl ebenfalls die städte indirekt trennen.
+# Doppelter Effekt ?
 
 
 
