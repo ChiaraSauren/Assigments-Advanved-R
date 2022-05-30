@@ -42,7 +42,7 @@ immowelt %>%
 immowelt_clean<-na.omit(immowelt)
 
 # Stellen Sie anschließend sicher, dass alle Variablen in einer geeigneten Klasse gespeichert werden
-char_v<-c("title")
+char_v<-c("title","building_year")
 
 immowelt_clean%<>%
   mutate(across(where(is.character) &! any_of(char_v),
@@ -163,10 +163,26 @@ cor%>%
   geom_tile()
 
 cor[11,10]
-# correlation between effiency_class and building_year= -0.2919819
+# correlation between effiency_class and building_year= -0.3325452
 
 cor[11,3]
-#correlation between effiency_class and cold_rent= -0.1420166
+#correlation between effiency_class and cold_rent= -0.14201658
+
+#### oder mit nur den drei Variablen
+cor<-immowelt_clean%>%
+  select(efficiency_class, building_year, cold_rent)%>%
+  mutate(across(where(is.character), as.numeric))%>%
+  mutate(across(where(is.factor), as.numeric))%>%
+  select_if(is.numeric) %>%
+  cor()
+
+cor%>%
+  as_tibble()%>%
+  mutate(var1=colnames(cor))%>%
+  pivot_longer(-var1, names_to = "var2", values_to = "value")%>%
+  ggplot(aes(var1, var2, fill=value))+
+  geom_tile()
+
 
 # i)
 reg1<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
