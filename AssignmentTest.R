@@ -37,30 +37,34 @@ immowelt %>%
                             latex_options = c("striped", "hold_position")) %>%
   kableExtra::row_spec(0, bold = TRUE)
 
+
+####NA raus
+immowelt_clean<-na.omit(immowelt)
+
 # Stellen Sie anschließend sicher, dass alle Variablen in einer geeigneten Klasse gespeichert werden
 char_v<-c("title")
 
-immowelt%<>%
+immowelt_clean%<>%
   mutate(across(where(is.character) &! any_of(char_v),
                 as.factor))
 
-immowelt%<>%
+immowelt_clean%<>%
   mutate(building_year=as.numeric(building_year))
 
 #b) Kalkulieren cold_rent und warm_rent per square meter
-immowelt%<>%
+immowelt_clean%<>%
   mutate(cold_rent_qm=cold_rent/square_meter) %>%
   mutate(warm_rent_qm=warm_rent/square_meter)
 
 #c) Tabelle mit 5 zipcode mit den meisten Anzeigen für jede Stadt
-immowelt%>%
+immowelt_clean%>%
   filter(city=="essen")%>% 
   group_by(zipcode)%>%
   summarise(count=n())%>%
   arrange(desc(count))%>%
   slice(1:5)
 
-immowelt%>%
+immowelt_clean%>%
   filter(city=="bochum")%>% 
   group_by(zipcode)%>%
   summarise(count=n())%>%
@@ -68,8 +72,7 @@ immowelt%>%
   slice(1:5)
 
 #d)
-
-immowelt %>%
+immowelt_clean %>%
   mutate(zipcode=factor(zipcode, c("45141","45147","45279","45326","45355",
                                    "44793","44795","44866","44809","44801"))) %>%
   drop_na() %>%
@@ -82,14 +85,14 @@ immowelt %>%
 
 
 #e)
-immowelt%>%
+immowelt_clean%>%
   ggplot(aes(x=square_meter, y=cold_rent_qm, color=city))+
   geom_point()+
   geom_smooth(se=FALSE)+
   labs(title = "Relatonship between square meter and warm rent per square meter",
        x="square meter", y="cold rent per qm")
 
-immowelt%>%
+immowelt_clean%>%
   ggplot(aes(x=square_meter, y=warm_rent_qm, color=city))+
   geom_point()+
   geom_smooth(se=FALSE)+
@@ -97,25 +100,21 @@ immowelt%>%
        x="square meter", y="warm rent per qm")
 
 #f)
-immowelt%>%
+immowelt_clean%>%
   ggplot(aes(x=cold_rent,y=warm_rent, color=city))+
   geom_boxplot()+
   labs(title = "Comparing absolut Warm Rent vs. Cold Rent for Bochum and Essen",
        x="Cold rent",y="Warm rent" )
 
 
-immowelt%>%
+immowelt_clean%>%
   ggplot(aes(x=cold_rent_qm, y=warm_rent_qm, color=city))+
   geom_boxplot()+
   labs(title = "Comparing Warm Rent vs. Cold Rent per square meter for Bochum and Essen",
        x="Cold rent per qm", y="Warm rent per qm")
 
 #g)
-# da war ein Außreiser, warmmiete bei 75 was kein sinn ergeben hat. Wusste nicht wie
-#man die Zeile löscht, also habe ich den Eintrag zu 750 gemacht. Es war die Zeile 219 :)
-immowelt$warm_rent[219]<-750
-
-immowelt%>%
+immowelt_clean%>%
   select(heating_cost_included, square_meter, warm_rent)%>%
   mutate(ship_nebenkosten=heating_cost_included/warm_rent*100)%>%
   ggplot(aes(x=square_meter, y=ship_nebenkosten))+
@@ -125,7 +124,7 @@ immowelt%>%
 
 #h)
 #(i)
-immowelt%>%
+immowelt_clean%>%
   select(efficiency_class,energy_demand, city)%>%
   mutate(efficiency_class=factor(efficiency_class,c(
     "A","A+","B","C","D","E",
@@ -137,7 +136,7 @@ immowelt%>%
 ##efficiency classes differ in terms of their energy demand  
 
 #(ii)
-immowelt%>%
+immowelt_clean%>%
   select(efficiency_class, city)%>%
   drop_na()%>%
   mutate(efficiency_class=factor(efficiency_class,c(
@@ -149,10 +148,11 @@ immowelt%>%
        x="classes", "Amount")
 
 ## (iii+vi)
-cor<-immowelt %>%
+cor<-immowelt_clean %>%
   mutate(across(where(is.character), as.numeric))%>%
   mutate(across(where(is.factor), as.numeric))%>%
   select_if(is.numeric) %>%
+  select(-title) %>%
   cor()
 
 cor%>%
@@ -162,26 +162,25 @@ cor%>%
   ggplot(aes(var1, var2, fill=value))+
   geom_tile()
 
+cor[11,10]
+# correlation between effiency_class and building_year= -0.2919819
 
-#there is no correlation between effiency_calss and building_year 
-# and beetween efficiency_class and cold_rent
-# but normaly there schould be. This depends here because of type of data and Lots of NA and i
-# dont know how to remove here the NAs, drop_na() doesnt work
-
+cor[11,3]
+#correlation between effiency_class and cold_rent= -0.1420166
 
 # i)
 reg1<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
-         data = immowelt)
+         data = immowelt_clean)
 summary(reg1)  
 
 
 reg2<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode,
-         data = immowelt)
+         data = immowelt_clean)
 summary(reg2)
 
 
 reg3<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode+city,
-         data = immowelt)
+         data = immowelt_clean)
 summary(reg3)
 
 #because maybe both cities can have the same zipcode. If we use both in one regression, we 
@@ -189,10 +188,10 @@ summary(reg3)
 
 #oder mithilfe cross-validierung
 set.seed(123)
-train<-immowelt%>%
+train<-immowelt_clean%>%
   slice_sample(prop = 0.8)
 
-test<-immowelt%>%
+test<-immowelt_clean%>%
   anti_join(train)
 
 mod_city<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
@@ -211,10 +210,13 @@ test%>%
 test%>%
   rmse(mod_zipcode,.)
 
-# The prediciton with using city is better.
+# The prediciton with using zipcode is better.
 
 mod_full<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+
                zipcode+city, data = train)
+
+test%>%
+  rmse(mod_full,.)
 
 summary(mod_full)
 summary(mod_city)
