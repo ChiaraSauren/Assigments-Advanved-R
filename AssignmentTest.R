@@ -1,4 +1,5 @@
-## Aufgabe 2
+## Number 2)
+
 library(dplyr)
 library(knitr)
 library(stringr)
@@ -13,22 +14,24 @@ library(ggplot2)
 library(zoo)
 library(stargazer)
 library(modelr)
-library(here)
 library(tidyr)
 library(tidyverse)
-
+library(rvest)
+?here
 #a)
-load(here("rent_advertisements.RData"))
+load(here::here("rent_advertisements.RData"))
 immowelt
+typeof(immowelt)
 
-### heating_cost_excluded Spalte rausschmeißen, dort sind nur NAs
-immowelt%<>%
-  select(-heating_cost_excluded)
+
+## omit column "heating_cost_excluded" as it contains no data (NAs) 
+immowelt %<>%
+  select( - heating_cost_excluded)
 
 head(immowelt)
-names(immowelt)
+names(immowelt) 
 
-#überblick
+#overview of the data
 immowelt %>%
   knitr::kable(booktabs = TRUE, linesep = "",
                escape = TRUE, caption = 'Immowelt'
@@ -38,105 +41,122 @@ immowelt %>%
   kableExtra::row_spec(0, bold = TRUE)
 
 
-####NA raus
-immowelt_clean<-na.omit(immowelt)
+#### clean all non-available data (NA)
+immowelt_clean <- na.omit(immowelt)
+immowelt_clean
 
-# Stellen Sie anschließend sicher, dass alle Variablen in einer geeigneten Klasse gespeichert werden
-char_v<-c("title","building_year")
+# Ensure that all variables of the dataset are stored using a proper class
+char_v <- c("title","building_year")
 
-immowelt_clean%<>%
+immowelt_clean %<>%
   mutate(across(where(is.character) &! any_of(char_v),
                 as.factor))
 
-immowelt_clean%<>%
-  mutate(building_year=as.numeric(building_year))
+immowelt_clean %<>%
+  mutate(building_year = as.numeric(building_year))
 
-#b) Kalkulieren cold_rent und warm_rent per square meter
-immowelt_clean%<>%
-  mutate(cold_rent_qm=cold_rent/square_meter) %>%
-  mutate(warm_rent_qm=warm_rent/square_meter)
 
-#c) Tabelle mit 5 zipcode mit den meisten Anzeigen für jede Stadt
-immowelt_clean%>%
-  filter(city=="essen")%>% 
-  group_by(zipcode)%>%
-  summarise(count=n())%>%
-  arrange(desc(count))%>%
+
+#b) calculate the cold_rent und warm_rent per square meter
+
+immowelt_clean %<>%
+  mutate(cold_rent_qm = cold_rent / square_meter) %>%
+  mutate(warm_rent_qm = warm_rent / square_meter)
+
+immowelt_clean$cold_rent_qm
+immowelt_clean$warm_rent_qm
+
+
+#c) Create one table with the five districts with the most ads for each city
+
+ads_essen <- immowelt_clean %>%
+  filter(city =="essen") %>% 
+  group_by(zipcode) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
   slice(1:5)
 
-immowelt_clean%>%
+ads_bochum <- immowelt_clean%>%
   filter(city=="bochum")%>% 
   group_by(zipcode)%>%
   summarise(count=n())%>%
   arrange(desc(count))%>%
   slice(1:5)
 
+full_join(ads_bochum,ads_essen)  # one table for each city
+
+
 #d)
 immowelt_clean %>%
-  mutate(zipcode=factor(zipcode, c("45141","45147","45279","45326","45355",
+  mutate(zipcode = factor(zipcode, c("45141","45147","45279","45326","45355",
                                    "44793","44795","44866","44809","44801"))) %>%
   drop_na() %>%
-  ggplot(aes(x=zipcode, y=warm_rent, color=city))+
-  geom_boxplot()+
+  ggplot(aes(x=zipcode, y=warm_rent, color=city)) +
+  geom_boxplot() +
   labs(title = 'Boxplot for the ten district with the most ads for essen and bochum',
-       x="\n Zipcode", y="\n warm rent")+
-  theme_minimal()+
+       x ="\n Zipcode", y ="\n warm rent")+
+  theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
 
 
 #e)
-immowelt_clean%>%
-  ggplot(aes(x=square_meter, y=cold_rent_qm, color=city))+
-  geom_point()+
-  geom_smooth(se=FALSE)+
+immowelt_clean %>%
+  ggplot(aes(x = square_meter, y = cold_rent_qm, color = city)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
   labs(title = "Relatonship between square meter and warm rent per square meter",
-       x="square meter", y="cold rent per qm")
+       x ="square meter", y ="cold rent per qm")
 
-immowelt_clean%>%
-  ggplot(aes(x=square_meter, y=warm_rent_qm, color=city))+
-  geom_point()+
-  geom_smooth(se=FALSE)+
-  labs(title = "Relatonship between square meter and cold rent per square meter",
+immowelt_clean %>%
+  ggplot(aes(x = square_meter, y = warm_rent_qm, color = city)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  labs(title = "Relatonship between square meter and warm rent per square meter",
        x="square meter", y="warm rent per qm")
 
 #f)
 immowelt_clean%>%
   ggplot(aes(x=cold_rent,y=warm_rent, color=city))+
   geom_boxplot()+
-  labs(title = "Comparing absolut Warm Rent vs. Cold Rent for Bochum and Essen",
+  labs(title = "Comparing absolut warm Rent vs. cold Rent for Bochum and Essen",
        x="Cold rent",y="Warm rent" )
 
 
 immowelt_clean%>%
   ggplot(aes(x=cold_rent_qm, y=warm_rent_qm, color=city))+
   geom_boxplot()+
-  labs(title = "Comparing Warm Rent vs. Cold Rent per square meter for Bochum and Essen",
-       x="Cold rent per qm", y="Warm rent per qm")
+  labs(title = "Comparing warm Rent vs. cold Rent per square meter for Bochum and Essen",
+       x ="Cold rent per qm", y = "Warm rent per qm")
 
 #g)
-immowelt_clean%>%
-  select(heating_cost_included, square_meter, warm_rent)%>%
-  mutate(ship_nebenkosten=heating_cost_included/warm_rent*100)%>%
-  ggplot(aes(x=square_meter, y=ship_nebenkosten))+
+
+immowelt_clean %>%
+  select(heating_cost_included, square_meter, warm_rent) %>%
+  mutate(share_nebenkosten = (heating_cost_included+immowelt_clean$service_charges)
+         /warm_rent*100) %>%
+  ggplot(aes(x=square_meter, y=share_nebenkosten))+
   geom_point()+
   labs(title = " Share of Nebenkosten of the warm rent",
-       x="Apprtment Size in square meter", y="Shape in %")
+       x="Appartment size in square meter", y="Share in %")
+
 
 #h)
 #(i)
-immowelt_clean%>%
+immowelt_clean %>%
   select(efficiency_class,energy_demand, city)%>%
-  mutate(efficiency_class=factor(efficiency_class,c(
+  mutate(efficiency_class = factor(efficiency_class,c(
     "A","A+","B","C","D","E",
-    "F","G","H")))%>%
-  drop_na()%>%
-  ggplot(aes(efficiency_class, energy_demand, color=city))+
-  geom_boxplot()
+    "F","G","H"))) %>%
+  drop_na() %>%
+  ggplot(aes(efficiency_class, energy_demand, color = city))+
+  geom_point()
 
-##efficiency classes differ in terms of their energy demand  
+##efficiency classes differ in terms of their energy demand. Low energy classes
+## seem to correlate with high energy demand. High energy classes seem to
+## correlate with low energy demands.
 
 #(ii)
-immowelt_clean%>%
+immowelt_clean %>%
   select(efficiency_class, city)%>%
   drop_na()%>%
   mutate(efficiency_class=factor(efficiency_class,c(
@@ -145,7 +165,9 @@ immowelt_clean%>%
   ggplot(aes(x=efficiency_class))+
   geom_bar(stat = 'count', width = 0.5, fill = '#004c93')+
   labs(title = "Amount of adds among the efficiency classes",
-       x="classes", "Amount")
+       x=" energy class", "amount", y = "ad count")
+
+## most ads are distributed at energy class "D"
 
 ## (iii+vi)
 cor<-immowelt_clean %>%
