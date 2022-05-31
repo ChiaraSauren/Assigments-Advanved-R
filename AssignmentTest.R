@@ -17,11 +17,11 @@ library(modelr)
 library(tidyr)
 library(tidyverse)
 library(rvest)
-?here
+
 #a)
 load(here::here("rent_advertisements.RData"))
 immowelt
-typeof(immowelt)
+
 
 
 ## omit column "heating_cost_excluded" as it contains no data (NAs) 
