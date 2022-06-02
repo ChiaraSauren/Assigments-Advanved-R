@@ -100,6 +100,7 @@ immowelt_clean %>%
 
 
 #e)
+
 immowelt_clean %>%
   ggplot(aes(x = square_meter, y = cold_rent_qm, color = city)) +
   geom_point() +
@@ -177,20 +178,28 @@ cor<-immowelt_clean %>%
   select(-title) %>%
   cor()
 
+
+  
+
 cor%>%
-  as_tibble()%>%
-  mutate(var1=colnames(cor))%>%
+  as_tibble() %>%
+  mutate(var1 = colnames(cor))%>%
   pivot_longer(-var1, names_to = "var2", values_to = "value")%>%
   ggplot(aes(var1, var2, fill=value))+
   geom_tile()
-
+cor
 cor[11,10]
 # correlation between effiency_class and building_year= -0.3325452
 
 cor[11,3]
 #correlation between effiency_class and cold_rent= -0.14201658
 
-#### oder mit nur den drei Variablen
+## in both cases, theres a slight negative correlation. The whole dataset
+## is included in this calculation.
+
+####In the following the variables "building year", "cold rent" and "efficiency
+##class" will be considered for calculating the correlation.
+
 cor<-immowelt_clean%>%
   select(efficiency_class, building_year, cold_rent)%>%
   mutate(across(where(is.character), as.numeric))%>%
@@ -204,27 +213,48 @@ cor%>%
   pivot_longer(-var1, names_to = "var2", values_to = "value")%>%
   ggplot(aes(var1, var2, fill=value))+
   geom_tile()
+cor
+cor[1,2] ## correlation between building year and efficiency class is -0.14201
+cor[1,3]## correlation between cold rent and efficiency class is -0.3325.
 
+# the results do not differ.
+
+## a slight negative correlation between the efficiency class and the building
+## year could be explained by improved building structure and heat efficient
+## heating systems. It´s logical to assume that with decreasing building year, 
+## the efficiency class will rise to a better grading.
+##The same argumentation can be applied to the correlation between the efficiency
+## class and the cold rent. A well build and innovative house will generally
+## cost a higher cold rent which results in better insulation and hence a lower 
+## (= better) efficiency class.
 
 # i)
 reg1<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
          data = immowelt_clean)
 summary(reg1)  
 
+## (Intercept)        -618.6383   942.9045  -0.656   0.5130 
+
 
 reg2<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode,
          data = immowelt_clean)
 summary(reg2)
+
+## (Intercept)        4691.89866 1780.57309   2.635  0.00952 ** 
 
 
 reg3<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode+city,
          data = immowelt_clean)
 summary(reg3)
 
-#because maybe both cities can have the same zipcode. If we use both in one regression, we 
-# maybe calculate it as double?^^ 
 
-#oder mithilfe cross-validierung
+
+#If both zipcode and city are used in the regression analysis, it might result
+# in multicolinearity, which will lead to possibly reduced accuracy of the predictions.
+
+##To determine which model is more fitting, cross validation is used in the
+## following
+
 set.seed(123)
 train<-immowelt_clean%>%
   slice_sample(prop = 0.8)
@@ -248,7 +278,7 @@ test%>%
 test%>%
   rmse(mod_zipcode,.)
 
-# The prediciton with using zipcode is better.
+# The prediciton with using as variable zipcode is better fit.
 
 mod_full<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+
                zipcode+city, data = train)
@@ -259,18 +289,40 @@ test%>%
 summary(mod_full)
 summary(mod_city)
 summary(mod_zipcode)
-# bei mod_full haben wir möglicherweise zu großen effekt,
-# weil wir schon einzeln städte angucken und die Postleizahl ebenfalls die städte indirekt trennen.
-# Doppelter Effekt ?
+
+## for mod_full has to much impact, a possible explanation could be 
+## multicollinearity due to using zipcode and city in one regression
 
 
+## Number 3
+
+# a)
+
+theme_favourite <- function(){
+  theme_classic() %+replace%
+    theme(
+      text = element_text(family = "serif", size = 16),
+      panel.spacing = unit(2, "cm"),
+      panel.grid.major = element_line(colour = "blue"),
+      panel.grid.minor = element_line(color = "blue")
+      
+    )
+}
+    
+# b
 
 
+ggscat <- function(data,x,y){
+  ggplot(data, aes(x = x, y=y)) +
+    geom_point() +
+    theme_favourite()+
+    labs(title = "A scatter plot") +
+    facet_grid()
+}
 
-
-
-
-
+# kriege den facet_grid nicht zum laufen, vielleicht habt ihr eine Idee?
+mtcars
+ggscat(data = mtcars, mtcars$mpg , mtcars$hp)   
 
 
 ### 4.
