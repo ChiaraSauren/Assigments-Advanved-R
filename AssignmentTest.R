@@ -333,12 +333,12 @@ install.packages("DBI")
 library(dplyr)
 connection <- DBI::dbConnect(
   drv = RSQLite::SQLite(),
-  assignmentdata = here::here("assignment_1.sqlite3"),
+  dbname = here::here("assignment_1.sqlite3"),
 )
-connection
+
 DBI::dbListTables(connection)
 
-#??? Wie auf Folie 11, keine Ahnung wie das funktionieren soll
+
 ### 4.
 
 ## a)
