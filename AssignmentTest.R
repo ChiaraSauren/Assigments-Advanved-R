@@ -312,12 +312,12 @@ theme_favourite <- function(){
 # b
 
 
-ggscat <- function(data,x,y){
+ggscat <- function(data,x,y,a){
   ggplot(data, aes(x = x, y=y)) +
     geom_point() +
     theme_favourite()+
     labs(title = "A scatter plot") +
-    facet_grid()
+    facet_grid( ~ a)
 }
 
 # kriege den facet_grid nicht zum laufen, vielleicht habt ihr eine Idee?
@@ -325,6 +325,20 @@ mtcars
 ggscat(data = mtcars, mtcars$mpg , mtcars$hp)   
 
 
+## c)
+
+install.packages("RSQLite")
+install.packages("DBI")
+
+library(dplyr)
+connection <- DBI::dbConnect(
+  drv = RSQLite::SQLite(),
+  assignmentdata = here::here("assignment_1.sqlite3"),
+)
+connection
+DBI::dbListTables(connection)
+
+#??? Wie auf Folie 11, keine Ahnung wie das funktionieren soll
 ### 4.
 
 ## a)
