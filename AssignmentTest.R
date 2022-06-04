@@ -18,7 +18,7 @@ library(tidyr)
 library(tidyverse)
 library(rvest)
 
-#a)
+#a) load the immowelt date in R
 load(here::here("rent_advertisements.RData"))
 immowelt
 
@@ -296,8 +296,11 @@ summary(mod_zipcode)
 
 ## Number 3
 
-# a)
+library(dplyr)
+library(DBI)
+library(RSQLite)
 
+# a) function that uses a standard ggplot2 theme
 theme_favourite <- function(){
   theme_classic() %+replace%
     theme(
@@ -308,11 +311,10 @@ theme_favourite <- function(){
       
     )
 }
-    
-# b
-
-
-ggscat <- function(data,x,y,a){
+   
+ 
+# b)
+ggscatt <- function(data,x,y,a){
   ggplot(data, aes(x = x, y=y)) +
     geom_point() +
     theme_favourite()+
@@ -322,21 +324,73 @@ ggscat <- function(data,x,y,a){
 
 # kriege den facet_grid nicht zum laufen, vielleicht habt ihr eine Idee?
 mtcars
-ggscat(data = mtcars, mtcars$mpg , mtcars$hp)   
+ggscatt(data = mtcars, mtcars$mpg , mtcars$hp)   
 
 
-## c)
+## c) relativ connection to the database
 
 install.packages("RSQLite")
 install.packages("DBI")
 
+
+# connect to the database
 library(dplyr)
 connection <- DBI::dbConnect(
   drv = RSQLite::SQLite(),
   dbname = here::here("assignment_1.sqlite3"),
 )
 
+# show the list of table in database
 DBI::dbListTables(connection)
+
+
+# d)  create an object which is a reference to a table in the database
+metro<-tbl(connection, "metro")
+head(metro)
+
+# actually pulls the data into R.
+metro_R<-metro %>% 
+  collect(n=Inf)
+head(metro_R)
+
+
+# e) Ensure, that all variables are stored using a proper class,
+# convert date_time as a time vector
+metro_R%<>%
+  mutate(date_time=as_datetime(date_time))
+tail(metro_R) #works good.
+
+
+# f) create a new variable weekday that represents the weekdays
+metro_R %<>%
+  mutate(weekday=weekdays(date_time))
+
+
+#g 
+
+
+# h) create a boxplot with weekday on x-asix, traffic_volume on y-axis
+metro_R %>%
+  mutate(weekday=factor(weekday, c("Montag","Dienstag","Mittwoch","Donnerstag","Freitag",
+                                   "Samstag","Sonntag"))) %>%
+  ggplot(aes(x=weekday, y=traffic_volume))+
+  geom_boxplot(color="steelblue")+
+  labs(title = "Boxplot of traffic volume and Weekday", 
+       x="Weekday", y="traffic Volume")
+  
+
+
+#i) add out modify dataframe to the database as metro_2
+dbWriteTable(connection,
+                  name="metro_2",
+                  value=metro_R)
+             
+
+dbListTables(connection)
+
+#von datenbank disconecten
+dbDisconnect(connection)
+
 
 
 ### 4.
