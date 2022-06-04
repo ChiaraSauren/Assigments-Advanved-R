@@ -364,7 +364,7 @@ tail(metro_R) #works good.
 # f) create a new variable weekday that represents the weekdays
 metro_R %<>%
   mutate(weekday=weekdays(date_time))
-
+  
 
 #g 
 
@@ -387,6 +387,16 @@ dbWriteTable(connection,
              
 
 dbListTables(connection)
+
+## Test
+metro_2<-tbl(connection, "metro_2")
+head(metro_2)
+
+# actually pulls the data into R.
+metro_R_2<-metro_2 %>% 
+  collect(n=Inf)
+head(metro_R_2)
+# works :)
 
 #von datenbank disconecten
 dbDisconnect(connection)
