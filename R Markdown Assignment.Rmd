@@ -1,0 +1,470 @@
+---
+title: "R Assignment 1"
+author: "Pavlo N., Chiara S., Viktor S."
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r load packages, echo=FALSE, include=FALSE}
+library(dplyr)
+library(knitr)
+library(stringr)
+library(here)
+library(stringi)
+library(janitor)
+library(magrittr)
+library(lubridate)
+library(tibble)
+library(kableExtra)
+library(ggplot2)
+library(zoo)
+library(stargazer)
+library(modelr)
+library(tidyr)
+library(tidyverse)
+library(rvest)
+library(DBI)
+library(RSQLite)
+
+```
+
+# Excercise 2
+
+a)
+
+load the immowelt data into R
+
+```{r}
+load(here::here("rent_advertisements.RData"))
+```
+
+omit column "heating_cost_excluded" as it contains no data (NAs) :
+
+```{r}
+immowelt %<>%
+  select(-heating_cost_excluded)
+
+head(immowelt)
+names(immowelt) 
+
+```
+
+overview of the data:
+
+```{r}
+immowelt %>%
+  knitr::kable(booktabs = TRUE, linesep = "",
+               escape = TRUE, caption = 'Immowelt'
+  ) |>
+  kableExtra::kable_styling(font_size = 10,
+                            latex_options = c("striped", "hold_position")) %>%
+  kableExtra::row_spec(0, bold = TRUE)
+```
+
+Clean all non-available data (NA).
+
+```{r}
+immowelt_clean <- na.omit(immowelt)
+immowelt_clean
+```
+
+
+Ensure that all variables of the dataset are stored using a proper class.
+
+```{r}
+char_v <- c("title","building_year")
+
+immowelt_clean %<>%
+  mutate(across(where(is.character) &! any_of(char_v),
+                as.factor))
+
+immowelt_clean %<>%
+  mutate(building_year = as.numeric(building_year))
+```
+
+b) Calculate the cold_rent and warm_rent per square meter:
+
+```{r}
+immowelt_clean %<>%
+  mutate(cold_rent_qm = cold_rent / square_meter) %>%
+  mutate(warm_rent_qm = warm_rent / square_meter)
+
+immowelt_clean$cold_rent_qm
+immowelt_clean$warm_rent_qm
+```
+
+
+Create one table with the five districts with the most ads for each city:
+
+```{r}
+ads_essen <- immowelt_clean %>%
+  filter(city =="essen") %>% 
+  group_by(zipcode) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  slice(1:5)
+
+ads_bochum <- immowelt_clean%>%
+  filter(city=="bochum")%>% 
+  group_by(zipcode)%>%
+  summarise(count=n())%>%
+  arrange(desc(count))%>%
+  slice(1:5)
+
+full_join(ads_bochum,ads_essen)  
+```
+
+
+d) Create a boxplot for the ten districts you found in (c), mapping the warm_rent.
+
+```{r}
+ immowelt_clean %>%
+  mutate(zipcode = factor(zipcode, c("45141","45147","45279","45326","45355",
+                                   "44793","44795","44866","44809","44801"))) %>%
+  drop_na() %>%
+  ggplot(aes(x=zipcode, y=warm_rent, color=city)) +
+  geom_boxplot() +
+  labs(title = 'Boxplot for the ten district with the most ads for essen and bochum',
+       x ="\n Zipcode", y ="\n warm rent")+
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+e) Create a scatterplot showing the relationship between square_meter and cold_rent and warm_-
+rent per square meter separately. Color and shape the points differently for the two cities. Also,
+draw a regression line to point out the relationship in the plots.
+
+```{r}
+ immowelt_clean %>%
+  ggplot(aes(x = square_meter, y = cold_rent_qm, color = city)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  labs(title = "Relatonship between square meter and warm rent per square meter",
+       x ="square meter", y ="cold rent per qm")
+
+immowelt_clean %>%
+  ggplot(aes(x = square_meter, y = warm_rent_qm, color = city)) +
+  geom_point() +
+  geom_smooth(se=FALSE) +
+  labs(title = "Relatonship between square meter and warm rent per square meter",
+       x="square meter", y="warm rent per qm")
+```
+
+f) To compare the housing market of the two cities graphically, create a boxplot on which both the
+cold_rent and the warm_rent are plotted. Do this for the absolute rents as well as for the rents
+per square meter.
+
+```{r}
+immowelt_clean%>%
+  ggplot(aes(x=cold_rent,y=warm_rent, color=city))+
+  geom_boxplot()+
+  labs(title = "Comparing absolut warm Rent vs. cold Rent for Bochum and Essen",
+       x="Cold rent",y="Warm rent" )
+
+immowelt_clean%>%
+  ggplot(aes(x=cold_rent_qm, y=warm_rent_qm, color=city))+
+  geom_boxplot()+
+  labs(title = "Comparing warm Rent vs. cold Rent per square meter for Bochum and Essen",
+       x ="Cold rent per qm", y = "Warm rent per qm")
+```
+
+g) Calculate the share of Nebenkosten (Nebenkosten = service_charges + heating_cost_-
+included) of the warm_rent and plot the percentage against the apartment size.
+
+```{r}
+immowelt_clean %>%
+  select(heating_cost_included, square_meter, warm_rent) %>%
+  mutate(share_nebenkosten = (heating_cost_included+immowelt_clean$service_charges)
+         /warm_rent*100) %>%
+  ggplot(aes(x=square_meter, y=share_nebenkosten))+
+  geom_point()+
+  labs(title = " Share of Nebenkosten of the warm rent",
+       x="Appartment size in square meter", y="Share in %")
+```
+
+h) Next, you want to get an overview of the different efficiency classes of efficiency_class. Create
+appropriate plots and compute statistics (if necessary) to answer the following questions:
+
+i) Do the efficiency classes differ in terms of their energy demand? Discuss your findings shortly:
+
+```{r}
+immowelt_clean %>%
+  select(efficiency_class,energy_demand, city)%>%
+  mutate(efficiency_class = factor(efficiency_class,c(
+    "A","A+","B","C","D","E",
+    "F","G","H"))) %>%
+  drop_na() %>%
+  ggplot(aes(efficiency_class, energy_demand, color = city))+
+  geom_point()
+```
+
+efficiency classes differ in terms of their energy demand. Low energy classes seem to correlate with high energy demand. High energy classes seem to correlate with low energy demands.
+
+ii) How is the amount of ads distributed among the efficiency classes?
+
+```{r}
+immowelt_clean %>%
+  select(efficiency_class, city)%>%
+  drop_na()%>%
+  mutate(efficiency_class=factor(efficiency_class,c(
+    "A","A+","B","C","D","E",
+    "F","G","H"))) %>%
+  ggplot(aes(x=efficiency_class))+
+  geom_bar(stat = 'count', width = 0.5, fill = '#004c93')+
+  labs(title = "Amount of adds among the efficiency classes",
+       x=" energy class", "amount", y = "ad count")
+```
+
+most ads are distributed at energy class "D".
+
+iii) + vi)
+
+```{r}
+cor<-immowelt_clean %>%
+  mutate(across(where(is.character), as.numeric))%>%
+  mutate(across(where(is.factor), as.numeric))%>%
+  select_if(is.numeric) %>%
+  select(-title) %>%
+  cor()
+
+cor%>%
+  as_tibble() %>%
+  mutate(var1 = colnames(cor))%>%
+  pivot_longer(-var1, names_to = "var2", values_to = "value")%>%
+  ggplot(aes(var1, var2, fill=value))+
+  geom_tile()
+cor
+cor[11,10]
+cor[11,3]
+```
+correlation between effiency_class and building_year = -0.3325452. The correlation between effiency_class and cold_rent= -0.14201658.In both cases, theres a slight negative correlation. The whole dataset is included in this calculation.
+
+In the following the variables "building year", "cold rent" and "efficiency class" will be considered for calculating the correlation:
+
+
+```{r}
+cor<-immowelt_clean%>%
+  select(efficiency_class, building_year, cold_rent)%>%
+  mutate(across(where(is.character), as.numeric))%>%
+  mutate(across(where(is.factor), as.numeric))%>%
+  select_if(is.numeric) %>%
+  cor()
+
+cor%>%
+  as_tibble()%>%
+  mutate(var1=colnames(cor))%>%
+  pivot_longer(-var1, names_to = "var2", values_to = "value")%>%
+  ggplot(aes(var1, var2, fill=value))+
+  geom_tile()
+cor
+cor[1,2]  
+cor[1,3]
+```
+The results do not differ. a slight negative correlation between the efficiency class and the building
+year could be explained by improved building structure and heat efficient heating systems. It´s logical to assume that with decreasing building year,the efficiency class will rise to a better grading.
+The same argumentation can be applied to the correlation between the efficiency class and the cold rent. A well build and innovative house will generally cost a higher cold rent which results in better insulation and hence a lower (= better) efficiency class.
+
+i) Perform two linear regressions to predict warm_rent. Both regressions use the variables efficiency_-
+class, rooms, building_year, square_meter, and service_charges. To investigate a systematical
+difference between the cities, use the variable city in the first regression, and zipcode in the
+other. Also, discuss why you cannot use city and zipcode in one regression and the advantages
+of each approach.
+
+```{r}
+ reg1<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
+         data = immowelt_clean)
+summary(reg1) 
+
+reg2<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode,
+         data = immowelt_clean)
+summary(reg2)
+
+reg3<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode+city,
+         data = immowelt_clean)
+summary(reg3)  # for comparison
+```
+
+If both zipcode and city are used in the regression analysis, it might result in multicolinearity, which will lead to possibly reduced accuracy of the predictions.
+To determine which model is more fitting, cross validation is used in the following:
+
+```{r}
+set.seed(123)
+train<-immowelt_clean%>%
+  slice_sample(prop = 0.8)
+
+test<-immowelt_clean%>%
+  anti_join(train)
+
+mod_city<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+city,
+             data = train)
+summary(mod_city) 
+
+mod_zipcode<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+zipcode,
+                data = train)
+
+summary(mod_zipcode)
+```
+
+For both models, compute the RMSE on the ‘test‘ dataset:
+
+```{r}
+ test%>%
+  rmse(mod_city,.)
+
+test%>%
+  rmse(mod_zipcode,.)
+```
+
+The prediction with the variable "zipcode" is a better fit.
+
+```{r}
+mod_full<-lm(warm_rent~efficiency_class+rooms+building_year+square_meter+service_charges+
+               zipcode+city, data = train)
+ test%>%
+  rmse(mod_full,.)
+
+summary(mod_full)
+summary(mod_city)
+summary(mod_zipcode)
+```
+
+"Mod__full" has to much impact. A possible explanation could be multicollinearity due to using
+the variable "zipcode" and "city" in the same regression.
+
+# Exercise 3
+
+a) Create a function that uses a standard ggplot2 theme and customize the following elements
+according to your taste.
+
+
+```{r}
+
+ theme_favourite <- function(){
+  theme_classic() %+replace%
+    theme(
+      text = element_text(family = "serif", size = 16),
+      panel.spacing = unit(2, "cm"),
+      panel.grid.major = element_line(colour = "blue"),
+      panel.grid.minor = element_line(color = "blue")
+      
+    )
+}
+```
+
+b) Write a function ggscatt() that generates a scatter plot. The function should be able to create
+faceted plots. Your theme from (a) should be used.
+
+```{r}
+ggscatt <- function(data,x,y){
+  ggplot(data, aes(x = x, y=y)) +
+    geom_point() +
+    theme_favourite()+
+    labs(title = "A scatter plot") +
+    facet_grid()
+}
+```
+
+c) Establish a relative connection to the database.
+
+```{r}
+library(dplyr)
+connection <- DBI::dbConnect(
+  drv = RSQLite::SQLite(),
+  dbname = here::here("assignment_1.sqlite3"),
+)
+# show the list of tables in the database
+DBI::dbListTables(connection)
+```
+
+d) Load the table metro into R.
+
+```{r}
+# create an object which is a reference to a table in the database
+ metro<-tbl(connection, "metro")
+head(metro)
+
+#actually pull the data into R.
+metro_R<-metro %>% 
+  collect(n=Inf)
+head(metro_R)
+```
+
+e) Ensure that all variables are stored using a proper class.
+
+```{r}
+ metro_R%<>%
+  mutate(date_time=as_datetime(date_time))
+tail(metro_R)
+```
+
+f) create a new variable weekday that represents the weekdays.
+
+```{r}
+ metro_R %<>%
+  mutate(weekday=weekdays(date_time))
+
+```
+
+g) Use your function ggscatt() from (b).
+
+```{r}
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$temp)
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$rain_1h)
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$snow_1h)
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$clouds_all)
+```
+
+h) Create a boxplot with the variable weekday on the x-axis and traffic_volume on the y-axis.
+
+```{r}
+metro_R %>%
+  mutate(weekday=factor(weekday, c("Montag","Dienstag","Mittwoch","Donnerstag","Freitag",
+                                   "Samstag","Sonntag"))) %>%
+  ggplot(aes(x=weekday, y=traffic_volume))+
+  geom_boxplot(color="steelblue")+
+  labs(title = "Boxplot of traffic volume and Weekday", 
+       x="Weekday", y="traffic Volume")
+```
+ 
+ i) Add your modified dataframe as a table to the database under the same metro_2.
+ 
+```{r}
+#dbWriteTable(connection,
+                  #name="metro_2",
+                  #value=metro_R)
+               
+#db_list_tables(connection)
+```
+ 
+# Exercise No. 4)
+
+a) 
+
+ $ git rm byeGit.txt  # removing and staging removal of byeGit.txt
+
+$ git add HelloGit.txt  # staging for commit
+
+$ git status  # make sure HelloGit.txt and byeGit.txt are staged
+
+$ git commit -m "Fixes to file"    # HelloGit.txt committed
+
+$ git add assignment_1.sqlite3     # track files for staging
+$ git add rent_advertisment.RData  
+
+$ git commit -m "data added"   # committed files
+
+b)
+
+ $ git add -p HelloGit.txt ## break down file into hunks, Git will prompt you 
+                          ## with a choice which hunks to stage for next commit
+$ git commit -m "Part 1"
+
+$ git add HelloGit.txt  ## stage rest of commitment
+
+$ git commit -m "Part2" ## commit rest of commitment
+

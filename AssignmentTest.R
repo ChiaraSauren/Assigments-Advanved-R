@@ -1,5 +1,11 @@
-## Number 2)
 
+
+## Number 1)
+
+
+
+## Number 2)
+library(rmarkdown)
 library(dplyr)
 library(knitr)
 library(stringr)
@@ -20,12 +26,10 @@ library(rvest)
 
 #a) load the immowelt date in R
 load(here::here("rent_advertisements.RData"))
-immowelt
-
 
 
 ## omit column "heating_cost_excluded" as it contains no data (NAs) 
-immowelt %<>%
+immowelt %>%
   select( - heating_cost_excluded)
 
 head(immowelt)
@@ -250,7 +254,7 @@ summary(reg3)
 
 
 #If both zipcode and city are used in the regression analysis, it might result
-# in multicolinearity, which will lead to possibly reduced accuracy of the predictions.
+# in multicollinearity, which will lead to possibly reduced accuracy of the predictions.
 
 ##To determine which model is more fitting, cross validation is used in the
 ## following
@@ -314,27 +318,19 @@ theme_favourite <- function(){
    
  
 # b)
-ggscatt <- function(data,x,y,a){
+ggscatt <- function(data,x,y){
   ggplot(data, aes(x = x, y=y)) +
     geom_point() +
     theme_favourite()+
     labs(title = "A scatter plot") +
-    facet_grid( ~ a)
+    facet_grid()
 }
 
-# kriege den facet_grid nicht zum laufen, vielleicht habt ihr eine Idee?
-mtcars
 ggscatt(data = mtcars, mtcars$mpg , mtcars$hp)   
 
 
-## c) relativ connection to the database
+## c) relative connection to the database
 
-install.packages("RSQLite")
-install.packages("DBI")
-
-
-# connect to the database
-library(dplyr)
 connection <- DBI::dbConnect(
   drv = RSQLite::SQLite(),
   dbname = here::here("assignment_1.sqlite3"),
@@ -367,6 +363,13 @@ metro_R %<>%
   
 
 #g 
+
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$temp)
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$rain_1h)
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$snow_1h)
+ggscatt(data = metro_R, metro_R$traffic_volume, metro_R$clouds_all)
+
+
 
 
 # h) create a boxplot with weekday on x-asix, traffic_volume on y-axis
