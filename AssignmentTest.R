@@ -1,11 +1,4 @@
-
-
-## Number 1)
-
-
-
-## Number 2)
-library(rmarkdown)
+library(RSQLite)
 library(dplyr)
 library(knitr)
 library(stringr)
@@ -24,12 +17,19 @@ library(tidyr)
 library(tidyverse)
 library(rvest)
 
+## Exercise Number 1)
+
+
+
+## Exercise Number 2)
+
+
 #a) load the immowelt date in R
 load(here::here("rent_advertisements.RData"))
 
 
 ## omit column "heating_cost_excluded" as it contains no data (NAs) 
-immowelt %>%
+immowelt %<>%
   select( - heating_cost_excluded)
 
 head(immowelt)
