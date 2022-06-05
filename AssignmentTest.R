@@ -354,7 +354,6 @@ title_essen <-rbind(title.e1, title.e2)
 city_essen <- rbind(city.e1, city.e2)
 cold_rent_essen <- rbind(cold_rent.e1, cold_rent.e2)
 sqr_mt_essen <-rbind(sq_mt.e1, sq_mt.e2)
-rooms_essen <-rbind(rooms.e1, rooms.e2)
 
 # Bochum
 
@@ -383,62 +382,65 @@ write.csv2(webscrape_data, "Webscrape_Data.csv")
 # Tibble Essen Page 1
 extract_page1_data_essen <- function(url){
   html <- read_html(url) 
-  tibble(city_essen = get_city_essen_1(html),
-         cold_rent_essen = get_cold_rent_essen_1(html),
-         rooms_essen = get_rooms_essen_1(html), 
-         square_meter_essen = get_square_meters_essen_1(html), 
-         title_essen = get_title_essen_1(html),
-         url_essen=get_url_essen_1(html))
+  tibble(city = get_city_essen_1(html),
+         cold_rent = get_cold_rent_essen_1(html),
+         rooms = get_rooms_essen_1(html), 
+         square_meter = get_square_meters_essen_1(html), 
+         title = get_title_essen_1(html),
+         url=get_url_essen_1(html))
   
 }
 
-extract_page1_data_essen("https://www.immowelt.de/liste/essen/wohnungen/mieten?sort=relevanz")
-city.e1
+t1<-extract_page1_data_essen("https://www.immowelt.de/liste/essen/wohnungen/mieten?sort=relevanz")
+t1
 
 #Tibble essen Page 2
 extract_page2_data_essen <- function(url){
   html <- read_html(url) 
-  tibble(city_essen = get_city_essen_2(html),
-         cold_rent_essen = get_cold_rent_essen_2(html),
-         rooms_essen = get_rooms_essen_2(html), 
-         square_meter_essen = get_square_meters_essen_2(html), 
-         title_essen = get_title_essen_2(html),
-         url_essen=get_url_essen_2(html))
+  tibble(city = get_city_essen_2(html),
+         cold_rent = get_cold_rent_essen_2(html),
+         rooms = get_rooms_essen_2(html), 
+         square_meter = get_square_meters_essen_2(html), 
+         title = get_title_essen_2(html),
+         url=get_url_essen_2(html))
   
 }
 
-extract_page2_data_essen("https://www.immowelt.de/liste/essen/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+t2<-extract_page2_data_essen("https://www.immowelt.de/liste/essen/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+t2
 
 
 # Tibble Bochum Page 1
 extract_page1_data_bochum <- function(url){
   html <- read_html(url) 
-  tibble(city_bochum = get_city_bochum_1(html),
-         cold_rent_bochum = get_cold_rent_bochum_1(html),
-         rooms_bochum = get_rooms_bochum_1(html), 
-         square_meter_bochum = get_square_meters_bochum_1(html), 
-         title_bochum = get_title_bochum_1(html),
-         url_bochum=get_url_bochum_1(html))
+  tibble(city = get_city_bochum_1(html),
+         cold_rent = get_cold_rent_bochum_1(html),
+         rooms = get_rooms_bochum_1(html), 
+         square_meter = get_square_meters_bochum_1(html), 
+         title = get_title_bochum_1(html),
+         url=get_url_bochum_1(html))
   
 }
 
-extract_page1_data_bochum("https://www.immowelt.de/liste/bochum/wohnungen/mieten?sort=relevanz")
+t3<-extract_page1_data_bochum("https://www.immowelt.de/liste/bochum/wohnungen/mieten?sort=relevanz")
 
 # tibble Bochum page 2
 extract_page2_data_bochum <- function(url){
   html <- read_html(url) 
-  tibble(city_bochum = get_city_bochum_2(html),
-         cold_rent_bochum = get_cold_rent_bochum_2(html),
-         rooms_bochum = get_rooms_bochum_2(html), 
-         square_meter_bochum = get_square_meters_bochum_2(html), 
-         title_bochum = get_title_bochum_2(html),
-         url_bochum=get_url_bochum_2(html))
+  tibble(city = get_city_bochum_2(html),
+         cold_rent = get_cold_rent_bochum_2(html),
+         rooms = get_rooms_bochum_2(html), 
+         square_meter = get_square_meters_bochum_2(html), 
+         title = get_title_bochum_2(html),
+         url=get_url_bochum_2(html))
   
 }
 
-extract_page2_data_bochum("https://www.immowelt.de/liste/bochum/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+t4<-extract_page2_data_bochum("https://www.immowelt.de/liste/bochum/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+t4
 
-
+Full_data<-rbind(t1,t2,t3,t4)
+Full_data
 ## Exercise Number 2)
 
 
