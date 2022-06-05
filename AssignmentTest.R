@@ -16,6 +16,7 @@ library(modelr)
 library(tidyr)
 library(tidyverse)
 library(rvest)
+library(purrr)
 
 ## Exercise Number 1)
 
@@ -437,23 +438,23 @@ $ git commit -m "Part2" ## commit rest of commitment
 
 ### Exercise 1)
 
-### First scraping data for Essen page 1 of immowelt 
+### First scrape the data for **Essen** on page 1 of immowelt: 
 
 url_essen_1 <- ("https://www.immowelt.de/liste/essen/wohnungen/mieten?sort=relevanz")
 
 html_essen_1 <- read_html(url_essen_1)
 
-## a) Scraping the URL for the first page (20 objects)
+## a) Now scrape the URL for the first page (20 objects):
 
 get_url_essen_1 <- function(html_essen_1){
   html_essen_1 %>%
     html_elements(".noProject-eaed4") %>%
     html_attr("href")
 }
+url.e1<- get_url_essen_1(html_essen_1)
 
-get_url_essen_1(html_essen_1)
 
-# b) Now Scraping the title of the first 20 advertisements 
+# b) Now scrape the title of the first 20 advertisements: 
 
 get_title_essen_1 <- function(html_essen_1){
   html_essen_1 %>%
@@ -462,7 +463,8 @@ get_title_essen_1 <- function(html_essen_1){
     str_trim()
 }
 
-get_title_essen_1(html_essen_1) 
+title.e1<-get_title_essen_1(html_essen_1) 
+title.e1
 
 # c) Scraping the area of the city
 
@@ -474,12 +476,10 @@ get_city_essen_1 <- function(html_essen_1){
     str_trim()
   
 }
-
-get_city_essen_1(html_essen_1) 
+city.e1<- get_city_essen_1(html_essen_1) 
+city.e1
 
 # d) Scraping Zip Codes
-
-library(purrr)
 
 html_test <- read_html("https://www.immowelt.de/expose/25wua5q")
 
@@ -491,10 +491,8 @@ get_zip_essen_1 <- function(html_essen_1){
     html_text()
   
 }
-
-
-
-
+zip.e1 <- get_zip_essen_1(html_essen_1)
+zip.e1
 
 # e) cold rent 
 
@@ -506,7 +504,7 @@ get_cold_rent_essen_1 <- function(html_essen_1){
   
 } 
 
-get_cold_rent_essen_1(html_essen_1)
+cold_rent.e1 <- get_cold_rent_essen_1(html_essen_1)
 
 # f) square meters
 
@@ -518,21 +516,17 @@ get_square_meters_essen_1 <- function(html_essen_1){
   
 }
 
-get_square_meters_essen_1(html_essen_1)
+sq_mt.e1 <- get_square_meters_essen_1(html_essen_1)
 
 # g) rooms
 
-get_rooms__essen_1 <- function(html_essen_1){
+get_rooms_essen_1 <- function(html_essen_1){
   html_essen_1 %>%
     html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
     html_text() %>%
     str_trim() 
-  
-  
 }
-
-get_rooms_essen_1(html_essen_1)
-
+ooms.e1 <- get_rooms_essen_1(html_essen_1)
 
 
 ### Now scraping data for Essen page 2 of immowelt 
@@ -549,7 +543,7 @@ get_url_essen_2 <- function(html_essen_2){
     html_attr("href")
 }
 
-get_url_essen_2(html_essen_2)
+url.e2 <-get_url_essen_2(html_essen_2)
 
 # b) Now Scraping the title of the remaining 20 advertisements 
 
@@ -560,7 +554,7 @@ get_title_essen_2 <- function(html_essen_2){
     str_trim()
 }
 
-get_title_essen_2(html_essen_2) 
+title.e2 <- get_title_essen_2(html_essen_2) 
 
 # c) Scraping the area of the city
 
@@ -570,13 +564,8 @@ get_city_essen_2 <- function(html_essen_2){
     html_text() %>%
     str_replace_all(".*\\,", "") %>%
     str_trim()
-  
 }
-
-get_city_essen_2(html_essen_2) 
-
-
-
+city.e2 <- get_city_essen_2(html_essen_2) 
 
 
 
@@ -587,10 +576,9 @@ get_cold_rent_essen_2 <- function(html_essen_2){
     html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
     html_text() %>%
     str_trim()
-  
 } 
 
-get_cold_rent_essen_2(html_essen_2)
+cold_rent.e2 <-get_cold_rent_essen_2(html_essen_2)
 
 # f) square meters
 
@@ -599,10 +587,8 @@ get_square_meters_essen_2 <- function(html_essen_2){
     html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
     html_text() %>%
     str_trim()
-  
 }
-
-get_square_meters_essen_2(html_essen_2)
+sq_mt.e2 <-get_square_meters_essen_2(html_essen_2)
 
 # g) rooms
 
@@ -611,11 +597,8 @@ get_rooms_essen_2 <- function(html_essen_2){
     html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
     html_text() %>%
     str_trim() 
-  
-  
 }
-
-get_rooms_essen_2(html_essen_2)
+rooms.e2 <- get_rooms_essen_2(html_essen_2)
 
 
 
@@ -633,7 +616,7 @@ get_url_bochum_1 <- function(html_bochum_1){
     html_attr("href")
 }
 
-get_url_bochum_1(html_bochum_1)
+url.b1 <-get_url_bochum_1(html_bochum_1)
 
 # b) Now Scraping the title of the first 20 advertisements 
 
@@ -643,8 +626,7 @@ get_title_bochum_1 <- function(html_bochum_1){
     html_text() %>%
     str_trim()
 }
-
-get_title_bochum_1(html_bochum_1) 
+title.b1 <- get_title_bochum_1(html_bochum_1) 
 
 # c) Scraping the area of the city
 
@@ -654,14 +636,8 @@ get_city_bochum_1 <- function(html_bochum_1){
     html_text() %>%
     str_replace_all(".*\\,", "") %>%
     str_trim()
-  
 }
-
-get_city_bochum_1(html_bochum_1) 
-
-
-
-
+city.b1 <-get_city_bochum_1(html_bochum_1) 
 
 
 # e) cold rent 
@@ -671,10 +647,8 @@ get_cold_rent_bochum_1 <- function(html_bochum_1){
     html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
     html_text() %>%
     str_trim()
-  
 } 
-
-get_cold_rent_bochum_1(html_bochum_1)
+cold_rent.b1 <-get_cold_rent_bochum_1(html_bochum_1)
 
 # f) square meters
 
@@ -683,10 +657,8 @@ get_square_meters_bochum_1 <- function(html_bochum_1){
     html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
     html_text() %>%
     str_trim()
-  
 }
-
-get_square_meters_bochum_1(html_bochum_1)
+sq_mt.b1 <-get_square_meters_bochum_1(html_bochum_1)
 
 # g) rooms
 
@@ -695,11 +667,8 @@ get_rooms_bochum_1 <- function(html_bochum_1){
     html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
     html_text() %>%
     str_trim() 
-  
-  
 }
-
-get_rooms_bochum_1(html_bochum_1)
+rooms.b1 <-get_rooms_bochum_1(html_bochum_1)
 
 
 ### Now scraping data for Bochum page 2 of immowelt 
@@ -716,8 +685,7 @@ get_url_bochum_2 <- function(html_bochum_2){
     html_elements(".noProject-eaed4") %>%
     html_attr("href")
 }
-
-get_url_bochum_2(html_bochum_2)
+url.b2 <- get_url_bochum_2(html_bochum_2)
 
 # b) Now Scraping the title of the remaining 20 advertisements 
 
@@ -727,8 +695,7 @@ get_title_bochum_2 <- function(html_bochum_2){
     html_text() %>%
     str_trim()
 }
-
-get_title_bochum_2(html_bochum_2) 
+title.b2 <-get_title_bochum_2(html_bochum_2) 
 
 # c) Scraping the area of the city
 
@@ -738,14 +705,8 @@ get_city_bochum_2 <- function(html_bochum_2){
     html_text() %>%
     str_replace_all(".*\\,", "") %>%
     str_trim()
-  
 }
-
-get_city_bochum_2(html_bochum_2) 
-
-
-
-
+city.b2 <-get_city_bochum_2(html_bochum_2) 
 
 
 # e) cold rent 
@@ -755,10 +716,8 @@ get_cold_rent_bochum_2 <- function(html_bochum_2){
     html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
     html_text() %>%
     str_trim()
-  
 } 
-
-get_cold_rent_bochum_2(html_bochum_2)
+cold_rent.b2 <-get_cold_rent_bochum_2(html_bochum_2)
 
 # f) square meters
 
@@ -767,10 +726,8 @@ get_square_meters_bochum_2 <- function(html_bochum_2){
     html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
     html_text() %>%
     str_trim()
-  
 }
-
-get_square_meters_bochum_2(html_bochum_2)
+sq_mt.b2 <-get_square_meters_bochum_2(html_bochum_2)
 
 # g) rooms
 
@@ -779,17 +736,40 @@ get_rooms_bochum_2 <- function(html_bochum_2){
     html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
     html_text() %>%
     str_trim() 
-  
-  
 }
-
-get_rooms_bochum_2(html_bochum_2)
-
+rooms.b2 <-get_rooms_bochum_2(html_bochum_2)
 
 
+# join data
 
 
+# Essen
+url_essen <-rbind(url.e1, url.e2)
+rooms_essen<- rbind(rooms.e1, rooms.e2)
+title_essen <-rbind(title.e1, title.e2)
+city_essen <- rbind(city.e1, city.e2)
+cold_rent_essen <- rbind(cold_rent.e1, cold_rent.e2)
+sqr_mt_essen <-rbind(sq_mt.e1, sq_mt.e2)
+rooms_essen <-rbind(rooms.e1, rooms.e2)
+
+# Bochum
+
+url_bochum <- rbind(url.b1, url.b2)
+title_bochum <-rbind(title.b1, title.b2)
+city_bochum <- rbind(city.b1, city.b2)
+cold_rent_bochum <- rbind(cold_rent.b1, cold_rent.b2)
+sqr_mt_bochum <- rbind(sq_mt.b1, sq_mt.b2)
+rooms_bochum <- rbind(rooms.b1, rooms.b2)
 
 
+# creating tibble
 
 
+webscrape_data <- tibble( url_bochum, title_bochum, city_bochum, 
+                    cold_rent_bochum, sqr_mt_bochum, rooms_bochum,
+                    url_essen, title_essen, city_essen, 
+                    cold_rent_essen, sqr_mt_essen, rooms_essen )
+
+webscrape_data$cold_rent_bochum
+
+write.csv2(webscrape_data, "Webscrape_Data.csv")

@@ -1,16 +1,13 @@
 ---
-title: "R Assignment 1"
+title: "R Assignment 1 Group 7"
 author: "Pavlo N., Chiara S., Viktor S."
 date: "`r Sys.Date()`"
 output: pdf_document
+fontsize: 11pt
+classoption: a4paper
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-
-```{r load packages, echo=FALSE, include=FALSE}
+Make sure to install and load following packages first:
+```{r, echo=TRUE, message=FALSE, include=TRUE, eval=TRUE}
 library(dplyr)
 library(knitr)
 library(stringr)
@@ -32,18 +29,336 @@ library(DBI)
 library(RSQLite)
 
 ```
+# Exercise Number 1)
 
-# Excercise 2
+First  prepare to scrape the data for **Essen** on page 1 of immowelt. 
+The scraped data will contain 40 observations for each city (Essen and Bochum).
+
+```{r}
+url_essen_1 <- ("https://www.immowelt.de/liste/essen/wohnungen/mieten?sort=relevanz")
+url_essen_2 <- ("https://www.immowelt.de/liste/essen/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+
+html_essen_1 <- read_html(url_essen_1)
+html_essen_2 <- read_html(url_essen_2)
+```
+
+a) Now scrape the URL for Essen
+
+```{r}
+get_url_essen_1 <- function(html_essen_1){
+  html_essen_1 %>%
+    html_elements(".noProject-eaed4") %>%
+    html_attr("href")
+}
+url.e1<- get_url_essen_1(html_essen_1)
+
+get_url_essen_2 <- function(html_essen_2){
+  html_essen_2 %>%
+    html_elements(".noProject-eaed4") %>%
+    html_attr("href")
+}
+
+url.e2 <-get_url_essen_2(html_essen_2)
+```
+
+b) Now scrape the title of the first 20 advertisements: 
+
+```{r}
+get_title_essen_1 <- function(html_essen_1){
+  html_essen_1 %>%
+    html_elements("h2") %>%
+    html_text() %>%
+    str_trim()
+}
+title.e1<-get_title_essen_1(html_essen_1)
+
+get_title_essen_2 <- function(html_essen_2){
+  html_essen_2 %>%
+    html_elements("h2") %>%
+    html_text() %>%
+    str_trim()
+}
+
+title.e2 <- get_title_essen_2(html_essen_2)
+```
+
+c) Area of the city for Essen:
+
+```{r}
+get_city_essen_1 <- function(html_essen_1){
+  html_essen_1 %>%
+    html_elements(".IconFact-e8a23:nth-child(1) span") %>%
+    html_text() %>%
+    str_replace_all(".*\\,", "") %>%
+    str_trim()
+  
+}
+city.e1<- get_city_essen_1(html_essen_1) 
+
+get_city_essen_2 <- function(html_essen_2){
+  html_essen_2 %>%
+    html_elements(".IconFact-e8a23:nth-child(1) span") %>%
+    html_text() %>%
+    str_replace_all(".*\\,", "") %>%
+    str_trim()
+}
+city.e2 <- get_city_essen_2(html_essen_2) 
+
+```
+
+d) Zipcodes of Essen:
+```{r}
+
+
+html_test <- read_html("https://www.immowelt.de/expose/25wua5q")
+get_zip_essen_1 <- function(html_essen_1){
+  html_test %>%
+    html_elements("#exposeAddress div") %>%
+    html_text()
+  
+}
+zip.e1 <- get_zip_essen_1(html_essen_1)
+
+```
+
+e) Cold rent for Essen:
+```{r}
+get_cold_rent_essen_1 <- function(html_essen_1){
+  html_essen_1 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
+    html_text() %>%
+    str_trim()
+} 
+cold_rent.e1 <- get_cold_rent_essen_1(html_essen_1)
+
+get_cold_rent_essen_2 <- function(html_essen_2){
+  html_essen_2 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
+    html_text() %>%
+    str_trim()
+} 
+
+cold_rent.e2 <-get_cold_rent_essen_2(html_essen_2)
+```
+
+f) square meters for Essen:
+
+```{r}
+get_square_meters_essen_1 <- function(html_essen_1){
+  html_essen_1 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
+    html_text() %>%
+    str_trim()
+}
+sq_mt.e1 <- get_square_meters_essen_1(html_essen_1)
+
+get_square_meters_essen_2 <- function(html_essen_2){
+  html_essen_2 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
+    html_text() %>%
+    str_trim()
+}
+sq_mt.e2 <-get_square_meters_essen_2(html_essen_2)
+```
+
+g) Rooms for Essen:
+
+```{r}
+get_rooms_essen_1 <- function(html_essen_1){
+  html_essen_1 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
+    html_text() %>%
+    str_trim() 
+}
+rooms.e1 <- get_rooms_essen_1(html_essen_1)
+
+get_rooms_essen_2 <- function(html_essen_2){
+  html_essen_2 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
+    html_text() %>%
+    str_trim() 
+}
+rooms.e2 <- get_rooms_essen_2(html_essen_2)
+
+
+```
+
+Now we scrape the same type of data for the city of **Bochum**.
+
+```{r}
+url_bochum_1 <- ("https://www.immowelt.de/liste/bochum/wohnungen/mieten?sort=relevanz")
+url_bochum_2 <- 
+  ("https://www.immowelt.de/liste/bochum/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+
+html_bochum_1 <- read_html(url_bochum_1)
+html_bochum_2 <- read_html(url_bochum_2)
+```
+
+a) Url for Bochum:
+
+```{r}
+get_url_bochum_1 <- function(html_bochum_1){
+  html_bochum_1 %>%
+    html_elements(".noProject-eaed4") %>%
+    html_attr("href")
+}
+
+url.b1 <-get_url_bochum_1(html_bochum_1)
+
+get_url_bochum_2 <- function(html_bochum_2){
+  html_bochum_2 %>%
+    html_elements(".noProject-eaed4") %>%
+    html_attr("href")
+}
+url.b2 <- get_url_bochum_2(html_bochum_2)
+```
+
+b) title of the advertisments for Bochum:
+
+```{r}
+get_title_bochum_1 <- function(html_bochum_1){
+  html_bochum_1 %>%
+    html_elements("h2") %>%
+    html_text() %>%
+    str_trim()
+}
+title.b1 <- get_title_bochum_1(html_bochum_1)
+
+get_title_bochum_2 <- function(html_bochum_2){
+  html_bochum_2 %>%
+    html_elements("h2") %>%
+    html_text() %>%
+    str_trim()
+}
+title.b2 <-get_title_bochum_2(html_bochum_2)
+```
+
+c) area of the city Bochum:
+
+```{r}
+get_city_bochum_1 <- function(html_bochum_1){
+  html_bochum_1 %>%
+    html_elements(".IconFact-e8a23:nth-child(1) span") %>%
+    html_text() %>%
+    str_replace_all(".*\\,", "") %>%
+    str_trim()
+}
+city.b1 <-get_city_bochum_1(html_bochum_1)
+
+get_city_bochum_2 <- function(html_bochum_2){
+  html_bochum_2 %>%
+    html_elements(".IconFact-e8a23:nth-child(1) span") %>%
+    html_text() %>%
+    str_replace_all(".*\\,", "") %>%
+    str_trim()
+}
+city.b2 <-get_city_bochum_2(html_bochum_2)
+```
+
+d) Cold rent for Bochum:
+
+```{r}
+get_cold_rent_bochum_1 <- function(html_bochum_1){
+  html_bochum_1 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
+    html_text() %>%
+    str_trim()
+} 
+cold_rent.b1 <-get_cold_rent_bochum_1(html_bochum_1)
+
+get_cold_rent_bochum_2 <- function(html_bochum_2){
+  html_bochum_2 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(1)") %>%
+    html_text() %>%
+    str_trim()
+} 
+cold_rent.b2 <-get_cold_rent_bochum_2(html_bochum_2)
+```
+
+e) Square meters for Bochum:
+
+```{r}
+get_square_meters_bochum_1 <- function(html_bochum_1){
+  html_bochum_1 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
+    html_text() %>%
+    str_trim()
+}
+sq_mt.b1 <-get_square_meters_bochum_1(html_bochum_1)
+
+get_square_meters_bochum_2 <- function(html_bochum_2){
+  html_bochum_2 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(2)") %>%
+    html_text() %>%
+    str_trim()
+}
+sq_mt.b2 <-get_square_meters_bochum_2(html_bochum_2)
+```
+ 
+ f) Rooms for Bochum:
+ 
+```{r}
+get_rooms_bochum_1 <- function(html_bochum_1){
+  html_bochum_1 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
+    html_text() %>%
+    str_trim() 
+}
+rooms.b1 <-get_rooms_bochum_1(html_bochum_1)
+
+get_rooms_bochum_2 <- function(html_bochum_2){
+  html_bochum_2 %>%
+    html_elements(".KeyFacts-efbce div:nth-child(3)") %>%
+    html_text() %>%
+    str_trim() 
+}
+rooms.b2 <-get_rooms_bochum_2(html_bochum_2)
+```
+
+Now combine the scraped data to make it less cluttered:
+
+```{r}
+# Essen
+url_essen <-rbind(url.e1, url.e2)
+rooms_essen<- rbind(rooms.e1, rooms.e2)
+title_essen <-rbind(title.e1, title.e2)
+city_essen <- rbind(city.e1, city.e2)
+cold_rent_essen <- rbind(cold_rent.e1, cold_rent.e2)
+sqr_mt_essen <-rbind(sq_mt.e1, sq_mt.e2)
+rooms_essen <-rbind(rooms.e1, rooms.e2)
+
+# Bochum
+url_bochum <- rbind(url.b1, url.b2)
+title_bochum <-rbind(title.b1, title.b2)
+city_bochum <- rbind(city.b1, city.b2)
+cold_rent_bochum <- rbind(cold_rent.b1, cold_rent.b2)
+sqr_mt_bochum <- rbind(sq_mt.b1, sq_mt.b2)
+rooms_bochum <- rbind(rooms.b1, rooms.b2)
+
+```
+
+Create a tibble to store the scraped data in and export to a csv.file:
+
+```{r}
+webscrape_data <- tibble( url_bochum, title_bochum, city_bochum, 
+                    cold_rent_bochum, sqr_mt_bochum, rooms_bochum,
+                    url_essen, title_essen, city_essen, 
+                    cold_rent_essen, sqr_mt_essen, rooms_essen )
+
+write.csv2(webscrape_data, "Webscrape_Data.csv")
+```
+
+# Excercise Number 2)
 
 a)
 
-load the immowelt data into R
+ Load the immowelt data into R
 
 ```{r}
 load(here::here("rent_advertisements.RData"))
 ```
 
-omit column "heating_cost_excluded" as it contains no data (NAs) :
+ Omit column "heating_cost_excluded" as it contains no data (NAs) :
 
 ```{r}
 immowelt %<>%
@@ -54,7 +369,7 @@ names(immowelt)
 
 ```
 
-overview of the data:
+ Overview of the data:
 
 ```{r}
 immowelt %>%
@@ -73,7 +388,6 @@ immowelt_clean <- na.omit(immowelt)
 immowelt_clean
 ```
 
-
 Ensure that all variables of the dataset are stored using a proper class.
 
 ```{r}
@@ -87,7 +401,8 @@ immowelt_clean %<>%
   mutate(building_year = as.numeric(building_year))
 ```
 
-b) Calculate the cold_rent and warm_rent per square meter:
+b)
+Calculate the cold_rent and warm_rent per square meter:
 
 ```{r}
 immowelt_clean %<>%
@@ -97,7 +412,6 @@ immowelt_clean %<>%
 immowelt_clean$cold_rent_qm
 immowelt_clean$warm_rent_qm
 ```
-
 
 Create one table with the five districts with the most ads for each city:
 
@@ -119,8 +433,8 @@ ads_bochum <- immowelt_clean%>%
 full_join(ads_bochum,ads_essen)  
 ```
 
-
-d) Create a boxplot for the ten districts you found in (c), mapping the warm_rent.
+d) 
+Create a boxplot for the ten districts you found in (c), mapping the warm_rent.
 
 ```{r}
  immowelt_clean %>%
@@ -135,7 +449,8 @@ d) Create a boxplot for the ten districts you found in (c), mapping the warm_ren
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-e) Create a scatterplot showing the relationship between square_meter and cold_rent and warm_-
+e) 
+Create a scatterplot showing the relationship between square_meter and cold_rent and warm_-
 rent per square meter separately. Color and shape the points differently for the two cities. Also,
 draw a regression line to point out the relationship in the plots.
 
@@ -155,7 +470,8 @@ immowelt_clean %>%
        x="square meter", y="warm rent per qm")
 ```
 
-f) To compare the housing market of the two cities graphically, create a boxplot on which both the
+f) 
+To compare the housing market of the two cities graphically, create a boxplot on which both the
 cold_rent and the warm_rent are plotted. Do this for the absolute rents as well as for the rents
 per square meter.
 
@@ -173,7 +489,8 @@ immowelt_clean%>%
        x ="Cold rent per qm", y = "Warm rent per qm")
 ```
 
-g) Calculate the share of Nebenkosten (Nebenkosten = service_charges + heating_cost_-
+g) 
+Calculate the share of Nebenkosten (Nebenkosten = service_charges + heating_cost_-
 included) of the warm_rent and plot the percentage against the apartment size.
 
 ```{r}
@@ -187,10 +504,12 @@ immowelt_clean %>%
        x="Appartment size in square meter", y="Share in %")
 ```
 
-h) Next, you want to get an overview of the different efficiency classes of efficiency_class. Create
+h) 
+Next, you want to get an overview of the different efficiency classes of efficiency_class. Create
 appropriate plots and compute statistics (if necessary) to answer the following questions:
 
-i) Do the efficiency classes differ in terms of their energy demand? Discuss your findings shortly:
+i) 
+Do the efficiency classes differ in terms of their energy demand? Discuss your findings shortly:
 
 ```{r}
 immowelt_clean %>%
@@ -203,9 +522,10 @@ immowelt_clean %>%
   geom_point()
 ```
 
-efficiency classes differ in terms of their energy demand. Low energy classes seem to correlate with high energy demand. High energy classes seem to correlate with low energy demands.
+The efficiency classes differ in terms of their energy demand. Low energy classes seem to correlate with high energy demand. High energy classes seem to correlate with low energy demands.
 
-ii) How is the amount of ads distributed among the efficiency classes?
+ii) 
+How is the amount of ads distributed among the efficiency classes?
 
 ```{r}
 immowelt_clean %>%
@@ -220,9 +540,9 @@ immowelt_clean %>%
        x=" energy class", "amount", y = "ad count")
 ```
 
-most ads are distributed at energy class "D".
+ Most ads are distributed at energy class "D".
 
-iii) + vi)
+iii) & vi)
 
 ```{r}
 cor<-immowelt_clean %>%
@@ -242,7 +562,8 @@ cor
 cor[11,10]
 cor[11,3]
 ```
-correlation between effiency_class and building_year = -0.3325452. The correlation between effiency_class and cold_rent= -0.14201658.In both cases, theres a slight negative correlation. The whole dataset is included in this calculation.
+The correlation between effiency_class and building_year is = -0.3325452. The correlation between effiency_class and cold_rent is = -0.14201658.
+In both cases, theres a slight negative correlation. The whole dataset is included in this calculation.
 
 In the following the variables "building year", "cold rent" and "efficiency class" will be considered for calculating the correlation:
 
@@ -269,7 +590,8 @@ The results do not differ. a slight negative correlation between the efficiency 
 year could be explained by improved building structure and heat efficient heating systems. It´s logical to assume that with decreasing building year,the efficiency class will rise to a better grading.
 The same argumentation can be applied to the correlation between the efficiency class and the cold rent. A well build and innovative house will generally cost a higher cold rent which results in better insulation and hence a lower (= better) efficiency class.
 
-i) Perform two linear regressions to predict warm_rent. Both regressions use the variables efficiency_-
+i) 
+Perform two linear regressions to predict warm_rent. Both regressions use the variables efficiency_-
 class, rooms, building_year, square_meter, and service_charges. To investigate a systematical
 difference between the cities, use the variable city in the first regression, and zipcode in the
 other. Also, discuss why you cannot use city and zipcode in one regression and the advantages
@@ -336,7 +658,7 @@ summary(mod_zipcode)
 "Mod__full" has to much impact. A possible explanation could be multicollinearity due to using
 the variable "zipcode" and "city" in the same regression.
 
-# Exercise 3
+# Exercise Number 3)
 
 a) Create a function that uses a standard ggplot2 theme and customize the following elements
 according to your taste.
@@ -441,7 +763,7 @@ metro_R %>%
 #db_list_tables(connection)
 ```
  
-# Exercise No. 4)
+# Exercise Number 4)
 
 a) 
 
