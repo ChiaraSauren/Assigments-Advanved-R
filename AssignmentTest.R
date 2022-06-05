@@ -344,39 +344,6 @@ get_rooms_bochum_2 <- function(html_bochum_2){
 rooms.b2 <-get_rooms_bochum_2(html_bochum_2)
 
 
-# join data
-
-
-# Essen
-url_essen <-rbind(url.e1, url.e2)
-rooms_essen<- rbind(rooms.e1, rooms.e2)
-title_essen <-rbind(title.e1, title.e2)
-city_essen <- rbind(city.e1, city.e2)
-cold_rent_essen <- rbind(cold_rent.e1, cold_rent.e2)
-sqr_mt_essen <-rbind(sq_mt.e1, sq_mt.e2)
-
-# Bochum
-
-url_bochum <- rbind(url.b1, url.b2)
-title_bochum <-rbind(title.b1, title.b2)
-city_bochum <- rbind(city.b1, city.b2)
-cold_rent_bochum <- rbind(cold_rent.b1, cold_rent.b2)
-sqr_mt_bochum <- rbind(sq_mt.b1, sq_mt.b2)
-rooms_bochum <- rbind(rooms.b1, rooms.b2)
-
-
-# creating tibble
-
-
-webscrape_data <- tibble( url_bochum, title_bochum, city_bochum, 
-                          cold_rent_bochum, sqr_mt_bochum, rooms_bochum,
-                          url_essen, title_essen, city_essen, 
-                          cold_rent_essen, sqr_mt_essen, rooms_essen )
-
-head(webscrape_data)
-webscrape_data$cold_rent_bochum
-
-write.csv2(webscrape_data, "Webscrape_Data.csv")
 
 ## Extract all data as Tibble
 # Tibble Essen Page 1
@@ -441,6 +408,8 @@ t4
 
 Full_data<-rbind(t1,t2,t3,t4)
 Full_data
+
+write.csv(Full_data, "Webscraping_Data.csv")
 ## Exercise Number 2)
 
 

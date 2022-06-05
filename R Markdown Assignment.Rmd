@@ -315,37 +315,72 @@ get_rooms_bochum_2 <- function(html_bochum_2){
 rooms.b2 <-get_rooms_bochum_2(html_bochum_2)
 ```
 
-Now combine the scraped data to make it less cluttered:
-
-```{r}
-# Essen
-url_essen <-rbind(url.e1, url.e2)
-rooms_essen<- rbind(rooms.e1, rooms.e2)
-title_essen <-rbind(title.e1, title.e2)
-city_essen <- rbind(city.e1, city.e2)
-cold_rent_essen <- rbind(cold_rent.e1, cold_rent.e2)
-sqr_mt_essen <-rbind(sq_mt.e1, sq_mt.e2)
-rooms_essen <-rbind(rooms.e1, rooms.e2)
-
-# Bochum
-url_bochum <- rbind(url.b1, url.b2)
-title_bochum <-rbind(title.b1, title.b2)
-city_bochum <- rbind(city.b1, city.b2)
-cold_rent_bochum <- rbind(cold_rent.b1, cold_rent.b2)
-sqr_mt_bochum <- rbind(sq_mt.b1, sq_mt.b2)
-rooms_bochum <- rbind(rooms.b1, rooms.b2)
-
-```
-
 Create a tibble to store the scraped data in and export to a csv.file:
 
 ```{r}
-webscrape_data <- tibble( url_bochum, title_bochum, city_bochum, 
-                    cold_rent_bochum, sqr_mt_bochum, rooms_bochum,
-                    url_essen, title_essen, city_essen, 
-                    cold_rent_essen, sqr_mt_essen, rooms_essen )
+# Tibble Essen Page 1
+extract_page1_data_essen <- function(url){
+  html <- read_html(url) 
+  tibble(city = get_city_essen_1(html),
+         cold_rent = get_cold_rent_essen_1(html),
+         rooms = get_rooms_essen_1(html), 
+         square_meter = get_square_meters_essen_1(html), 
+         title = get_title_essen_1(html),
+         url=get_url_essen_1(html))
+}
+t1<-extract_page1_data_essen("https://www.immowelt.de/liste/essen/wohnungen/mieten?sort=relevanz")
+t1
 
-write.csv2(webscrape_data, "Webscrape_Data.csv")
+#Tibble essen Page 2
+extract_page2_data_essen <- function(url){
+  html <- read_html(url) 
+  tibble(city = get_city_essen_2(html),
+         cold_rent = get_cold_rent_essen_2(html),
+         rooms = get_rooms_essen_2(html), 
+         square_meter = get_square_meters_essen_2(html), 
+         title = get_title_essen_2(html),
+         url=get_url_essen_2(html))
+}
+t2<-extract_page2_data_essen("https://www.immowelt.de/liste/essen/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+t2
+
+# Tibble Bochum Page 1
+extract_page1_data_bochum <- function(url){
+  html <- read_html(url) 
+  tibble(city = get_city_bochum_1(html),
+         cold_rent = get_cold_rent_bochum_1(html),
+         rooms = get_rooms_bochum_1(html), 
+         square_meter = get_square_meters_bochum_1(html), 
+         title = get_title_bochum_1(html),
+         url=get_url_bochum_1(html))
+  
+}
+
+t3<-extract_page1_data_bochum("https://www.immowelt.de/liste/bochum/wohnungen/mieten?sort=relevanz")
+
+# tibble Bochum page 2
+extract_page2_data_bochum <- function(url){
+  html <- read_html(url) 
+  tibble(city = get_city_bochum_2(html),
+         cold_rent = get_cold_rent_bochum_2(html),
+         rooms = get_rooms_bochum_2(html), 
+         square_meter = get_square_meters_bochum_2(html), 
+         title = get_title_bochum_2(html),
+         url=get_url_bochum_2(html))
+  
+}
+
+t4<-extract_page2_data_bochum("https://www.immowelt.de/liste/bochum/wohnungen/mieten?d=true&sd=DESC&sf=RELEVANCE&sp=2")
+t4
+```
+
+Combine the data in one tibble and export the data into a csv. file:
+
+```{r}
+Full_data<-rbind(t1,t2,t3,t4)
+Full_data
+
+write.csv(Full_data, "Webscraping_Data.csv")
 ```
 
 # Excercise Number 2)
@@ -371,7 +406,7 @@ names(immowelt)
 
  Overview of the data:
 
-```{r}
+```{r eval=FALSE}
 immowelt %>%
   knitr::kable(booktabs = TRUE, linesep = "",
                escape = TRUE, caption = 'Immowelt'
@@ -458,7 +493,7 @@ draw a regression line to point out the relationship in the plots.
  immowelt_clean %>%
   ggplot(aes(x = square_meter, y = cold_rent_qm, color = city)) +
   geom_point() +
-  geom_smooth(se=FALSE) +
+  geom_smooth(se=FALSE, method = "lm") +
   labs(title = "Relatonship between square meter and warm rent per square meter",
        x ="square meter", y ="cold rent per qm")
 
