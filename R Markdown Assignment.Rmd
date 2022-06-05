@@ -500,7 +500,7 @@ draw a regression line to point out the relationship in the plots.
 immowelt_clean %>%
   ggplot(aes(x = square_meter, y = warm_rent_qm, color = city)) +
   geom_point() +
-  geom_smooth(se=FALSE) +
+  geom_smooth(se=FALSE, method = "lm") +
   labs(title = "Relatonship between square meter and warm rent per square meter",
        x="square meter", y="warm rent per qm")
 ```
