@@ -1,5 +1,6 @@
 library(stats)
 library(profvis)
+library(purrr)
 ## 1
 x <- (5)
 
@@ -7,7 +8,7 @@ lprob_nbinomial <- function(p){
   #negative likelihood
   neg_likelihood_NB <- list(-prod(dnbinom(x,size=10,prob = p)),
   #negative log-likelihood
-  neg_loglikelihood_NB <- (-sum(log(dnbinom(x,size=10,prob = p))))
+  neg_loglikelihood_NB <<- (-sum(log(dnbinom(x,size=10,prob = p))))
   )
   return(neg_likelihood_NB)
                           
@@ -52,5 +53,22 @@ nbin_mle<-function(x){
 
 nbin_mle(x1)
 
+## alternativer Versuch
+neg_loglikelihood_NB <- function(p){
+  (-sum(log(dnbinom(x,size=10,prob = p))))
+}
+
+nbin_mle<-function(x){
+mle <-  list(optim(par = 0.5,fn= neg_loglikelihood_NB ,lower = 1e-8,
+        upper = 1-1e-8,method = 'L-BFGS-B'))
+return(mle)
+}
 
 
+nbin_mle(0.2)
+
+## Das Problem am MLE optimieren ist, dass in der funktion lprob_nbinomial
+#2 Funktionen optimiert werden sollen, also likelihood und loglikelihood, 
+# in der Aufgabe steht nur man soll log-likelihood mit MLE schätzen. Wenn ich es
+# nur mit der loglikelihood funktion mache, scheint optim() zu funktionieren
+#$par müsste dann der MLE Schätzer sein
