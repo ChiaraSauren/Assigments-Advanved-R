@@ -29,9 +29,8 @@ lprob_nbinomial(0.2)
 #c)
 ll_nbinomial<-function(p){
   function(x){
-    neg_likelihood_NB <- list(-prod(dnbinom(x,size=10,prob = p)),
-    neg_loglikelihood_NB <- (-sum(log(dnbinom(x,size=10,prob = p)))))
-  return(neg_likelihood_NB)
+    neg_loglikelihood_NB <- (-sum(log(dnbinom(x,size=10,prob = p))))
+  return(neg_loglikelihood_NB)
   }
 }
 
@@ -39,33 +38,45 @@ ll_nbinomial<-function(p){
 a<-ll_nbinomial(0.2)
 a(5)
 a(10)
-
+# Kann beliebiger Wert für x eingesetzt werden
 
 #d) 
 set.seed(123)
 x1<-rnbinom(n=1e3, size = 10, prob = .3)
 a(x1)
 
+
 #e)
 nbin_mle<-function(x){
-  optimize(f=a, interval = c(0,1), maximum = T)
+  mle<-list(optim(par=0, fn=a))
+  return(mle)
 }
 
 nbin_mle(x1)
 
+
+# mit optimize (komische Ergebnisse)
+b<-function(x){
+  mle<-optimize(a, interval = c(0,1000))
+  return(mle)
+}
+
+b(x1)
+
 ## alternativer Versuch
+x<-5
 neg_loglikelihood_NB <- function(p){
-  (-sum(log(dnbinom(x,size=10,prob = p))))
+  (-sum(log(dnbinom(x,size=10, prob = p))))
 }
 
 nbin_mle<-function(x){
-mle <-  list(optim(par = 0.5,fn= neg_loglikelihood_NB ,lower = 1e-8,
+mle <-  list(optim(par = 0.5,fn=neg_loglikelihood_NB ,lower = 1e-8,
         upper = 1-1e-8,method = 'L-BFGS-B'))
 return(mle)
 }
 
 
-nbin_mle(0.2)
+nbin_mle(x1)
 
 ## Das Problem am MLE optimieren ist, dass in der funktion lprob_nbinomial
 #2 Funktionen optimiert werden sollen, also likelihood und loglikelihood, 
