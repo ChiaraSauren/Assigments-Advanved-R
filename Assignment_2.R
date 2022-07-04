@@ -8,11 +8,9 @@ lprob_nbinomial <- function(p){
   neg_likelihood_NB <- list(-prod(dnbinom(x,size=10,prob = p)),
   #negative log-likelihood
   neg_loglikelihood_NB <- (-sum(log(dnbinom(x,size=10,prob = p))))
-                            )
+  )
   return(neg_likelihood_NB)
-  
- 
-
+                          
 }
 
 
@@ -21,8 +19,38 @@ lprob_nbinomial(0.2)
 
 # generating the dnbinom call should be the most computationally demanding
 
-#b
+#b )
 
 # ephermal environments are meant to last for  only a short amount of time. Thus they
 # just are just temporarily generated to serve a function in e.g only a single call or R function.
+
+
+#c)
+ll_nbinomial<-function(p){
+  function(x){
+    neg_likelihood_NB <- list(-prod(dnbinom(x,size=10,prob = p)),
+    neg_loglikelihood_NB <- (-sum(log(dnbinom(x,size=10,prob = p)))))
+  return(neg_likelihood_NB)
+  }
+}
+
+
+a<-ll_nbinomial(0.2)
+a(5)
+a(10)
+
+
+#d) 
+set.seed(123)
+x1<-rnbinom(n=1e3, size = 10, prob = .3)
+a(x1)
+
+#e)
+nbin_mle<-function(x){
+  optimize(f=a, interval = c(0,1), maximum = T)
+}
+
+nbin_mle(x1)
+
+
 
