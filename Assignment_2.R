@@ -109,6 +109,8 @@ nbin_mle(x1)
 # nur mit der loglikelihood funktion mache, scheint optim() zu funktionieren
 #$par müsste dann der MLE Schätzer sein
 
+
+# f)
 nbin_mle<-function(x){
   mle <-  list(optim(par = 0.5,fn=neg_loglikelihood_NB ,lower = 1e-8,
                      upper = 1-1e-8,method = 'L-BFGS-B'))
