@@ -80,34 +80,19 @@ ll(0.5)  # pi = 0.5
 
 
 #e)
-# mit optimize (komische Ergebnisse)
-b<-function(x){
-  mle<-optimize(ll, interval = c(0,10), maximum=T)
-  return(mle)
+
+mle<-function(x){
+mle_x <- optimize(ll, interval = c(0,10), maximum=T)
+return(mle_x)
+
+
 }
 
-b(x1)
-
-## alternativer Versuch
-x<-5
-neg_loglikelihood_NB <- function(p){
-  (-sum(log(dnbinom(x,size=10, prob = p))))
-}
-
-nbin_mle<-function(x){
-mle <-  list(optim(par = 0.5,fn=neg_loglikelihood_NB ,lower = 1e-8,
-        upper = 1-1e-8,method = 'L-BFGS-B'))
-return(mle)
-}
+mle(0.5)
 
 
-nbin_mle(x1)
 
-## Das Problem am MLE optimieren ist, dass in der funktion lprob_nbinomial
-#2 Funktionen optimiert werden sollen, also likelihood und loglikelihood, 
-# in der Aufgabe steht nur man soll log-likelihood mit MLE schätzen. Wenn ich es
-# nur mit der loglikelihood funktion mache, scheint optim() zu funktionieren
-#$par müsste dann der MLE Schätzer sein
+
 
 
 # f)
