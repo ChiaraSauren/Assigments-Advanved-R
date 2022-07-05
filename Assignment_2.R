@@ -13,12 +13,11 @@ lprob_nbinomial <- function(pi, x){
 lprob_nbinomial(0.5, x)                          
 
 
-#generate some data to test the function:
+#generate some data to test and profile the function:
 x <- rnbinom( n = 1e5, size = 5, prob = .2)
 x <- rnbinom( n = 1e6, size = 5, prob = .2)
 length(x)
 
-lprob_nbinomial(0.5)  # test function
 
 # profile collecting of example data and parts of the function in comparison
 profvis({
@@ -50,23 +49,33 @@ profvis({
 
 
 #c)
-ll_nbinomial<-function(p){
-  function(x){
-    neg_loglikelihood_NB <- (-sum(log(dnbinom(x,size=10,prob = p))))
-  return(neg_loglikelihood_NB)
-  }
+ll_nbinomial<-function(x){
+  length(x)
+  c1 <- log(choose(x+10-1, x))
+  c2 <- x
+
+function(pi){
+(-sum((c1) + 10 * log(pi)+c2 * log(1-pi)))
+  
 }
+  }
 
 
-a<-ll_nbinomial(0.2)
-a(5)
-a(10)
-# Kann beliebiger Wert für x eingesetzt werden
+
+ll<-ll_nbinomial(x)
+
+
 
 #d) 
 set.seed(123)
 x1<-rnbinom(n=1e3, size = 10, prob = .3)
-a(x1)
+x <- x1
+
+ll(0.1) # pi = 0.1
+ll(0.5)  # pi = 0.5
+
+
+
 
 
 #e)
