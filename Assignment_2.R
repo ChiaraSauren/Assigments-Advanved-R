@@ -10,6 +10,7 @@ lprob_nbinomial <- function(pi, x){
   n <- length(x)
   (-sum((log(choose(x+10-1, x)))+ 10 * log(pi)+x * log(1-pi)))
 }
+
 lprob_nbinomial(0.5, x)                          
 
 
@@ -63,7 +64,7 @@ function(pi){
 
 
 ll<-ll_nbinomial(x)
-
+ll
 
 
 #d) 
@@ -79,17 +80,9 @@ ll(0.5)  # pi = 0.5
 
 
 #e)
-nbin_mle<-function(x){
-  mle<-list(optim(par=0, fn=a))
-  return(mle)
-}
-
-nbin_mle(x1)
-
-
 # mit optimize (komische Ergebnisse)
 b<-function(x){
-  mle<-optimize(a, interval = c(0,1000))
+  mle<-optimize(ll, interval = c(0,10), maximum=T)
   return(mle)
 }
 
@@ -115,3 +108,37 @@ nbin_mle(x1)
 # in der Aufgabe steht nur man soll log-likelihood mit MLE schätzen. Wenn ich es
 # nur mit der loglikelihood funktion mache, scheint optim() zu funktionieren
 #$par müsste dann der MLE Schätzer sein
+
+nbin_mle<-function(x){
+  mle <-  list(optim(par = 0.5,fn=neg_loglikelihood_NB ,lower = 1e-8,
+                     upper = 1-1e-8,method = 'L-BFGS-B'))
+  class(mle)<-"my_mle"
+  return(mle)
+}
+
+
+nbin_mle(x1)
+
+summary.my_mle <- function(x) {
+  if(class(x) == "my_mle") {
+    x <- unlist(x)
+    out <- list(
+      name = quote(x),
+      n = length(x),
+      min = min(x),
+      max = max(x),
+      tibble(
+        prob=seq(0,1,0.1)
+        
+      )
+    )
+    class(out) <- "summary.my_mle"
+    return(out)
+  } else {
+    message("Object not of class my_mle!")
+  }
+}
+
+my_nbin_mle<-nbin_mle(x1)
+summary(my_nbin_mle)
+
