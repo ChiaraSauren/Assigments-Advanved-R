@@ -82,7 +82,7 @@ ll(0.5)  # pi = 0.5
 #e)
 # mit optimize (komische Ergebnisse)
 b<-function(x){
-  mle<-optimize(ll, interval = c(0,10), maximum=T)
+  mle<-optimize(ll, interval = c(0,1000), maximum=T)
   return(mle)
 }
 
@@ -111,6 +111,7 @@ nbin_mle(x1)
 
 
 # f)
+x<-5
 nbin_mle<-function(x){
   mle <-  list(optim(par = 0.5,fn=neg_loglikelihood_NB ,lower = 1e-8,
                      upper = 1-1e-8,method = 'L-BFGS-B'))
@@ -120,6 +121,7 @@ nbin_mle<-function(x){
 
 
 nbin_mle(x1)
+
 
 summary.my_mle <- function(x) {
   if(class(x) == "my_mle") {
@@ -141,6 +143,23 @@ summary.my_mle <- function(x) {
   }
 }
 
-my_nbin_mle<-nbin_mle(x1)
+my_nbin_mle<-nbin_mle(x)
 summary(my_nbin_mle)
+
+
+## g)
+print.summary.my_mle <- function(x) {
+  if(class(x) == "summary.my_mle") {
+    cat(
+      "Schöne Zusammenfassung für", x$name, ":\n\n",
+      x$prob, "Wahrscheinlichkeiten für MLE", x$min, "to", x$max
+    )
+  } else {
+    message("Object not of class summary.my_mle!")
+  }
+  
+}
+
+summary(my_nbin_mle)
+
 
