@@ -114,7 +114,7 @@ print.summary.my_mle <- function(x) {
   if(class(x) == "summary.my_mle") {
     cat(
       "Schöne Zusammenfassung für", x$name, ":\n\n",
-      "Wahrscheinlichkeiten für MLE", my_nbin_mle[[1]]$value, "für", my_nbin_mle[[1]]$par
+      "Wahrscheinlichkeiten für MLE", my_nbin_mle[[1]]$value, "ist", my_nbin_mle[[1]]$par
     )
   } else {
     message("Object not of class summary.my_mle!")
@@ -131,24 +131,17 @@ plot.summary.my_mle <- function(x) {
  pi<-(1:99)/100
  loglikelihood<-sapply(pi, ll)
  plot(pi, loglikelihood, type="l",
-      xlab="Pi", ylab = ".log L(pi; x, k=10")
- points(y=my_nbin_mle[[1]]$value,x=my_nbin_mle[[1]]$par, add=T,col="red", type = "p", lwd=2)
+      xlab="Pi", ylab = ".log L(pi; x, k=10)")
+ points(y=my_nbin_mle[[1]]$value,x=my_nbin_mle[[1]]$par,col="red", type = "p", lwd=2)
 }
 
 plot.summary.my_mle(x1)
 ##
 
-plot.summary.my_mle <- function(x){
- pi <- (1:99)/100
-loglikelihood <- sapply(pi, ll)
-plot(pi, loglikelihood, type = "l",
-     xlab = "Pi", ylab = "-log L(pi; x, k =10")
-  
-}
 
-
-#g 
-
-
+##
+##h)
+my_nbin_mle<-nbin_mle(x1)
+summary(my_nbin_mle)
 plot.summary.my_mle(x1)
- 
+
