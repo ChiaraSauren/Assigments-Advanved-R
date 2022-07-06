@@ -18,7 +18,6 @@ length(x)
 # profile collecting of example data and parts of the function in comparison
 profvis({
   
-  n <- length(x)
   test <-  (-sum((log(choose(x+10-1, x)))+ 10 * log(0.5)+x * log(1-0.5)))
   
 })
@@ -90,7 +89,7 @@ nbin_mle(x1)[[1]]$par
 summary.my_mle <- function(x) {
   if(class(x) == "my_mle") {
     x <- unlist(x)
-    out <- list(
+    out <<- list(
       name = quote(x),
       min = min(x),
       tibble(
@@ -139,3 +138,17 @@ plot.summary.my_mle <- function(x) {
 plot.summary.my_mle(x1)
 ##
 
+plot.summary.my_mle <- function(x){
+ pi <- (1:99)/100
+loglikelihood <- sapply(pi, ll)
+plot(pi, loglikelihood, type = "l",
+     xlab = "Pi", ylab = "-log L(pi; x, k =10")
+  
+}
+
+
+#g 
+
+
+plot.summary.my_mle(x1)
+ 
