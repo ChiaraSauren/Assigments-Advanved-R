@@ -137,5 +137,5 @@ plot.summary.my_mle <- function(x) {
 }
 
 plot.summary.my_mle(x1)
-
+##
 
