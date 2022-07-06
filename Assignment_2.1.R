@@ -125,4 +125,17 @@ print.summary.my_mle <- function(x) {
 
 summary(my_nbin_mle)
 
+nbin_mle(x1)[[1]]$par
+
+##### plot
+plot.summary.my_mle <- function(x) {
+ pi<-(1:99)/100
+ loglikelihood<-sapply(pi, ll)
+ plot(pi, loglikelihood, type="l",
+      xlab="Pi", ylab = ".log L(pi; x, k=10")
+ points(y=my_nbin_mle[[1]]$value,x=my_nbin_mle[[1]]$par, add=T,col="red", type = "p", lwd=2)
+}
+
+plot.summary.my_mle(x1)
+
 
